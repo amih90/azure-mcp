@@ -1,0 +1,54 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Models.Command;
+using AzureMcp.Services.Interfaces;
+using Microsoft.Extensions.Logging;
+using ModelContextProtocol.Server;
+using System.CommandLine.Parsing;
+
+namespace AzureMcp.Commands.DataExplorer;
+
+public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
+{
+    private readonly ILogger<ClusterGetCommand> _logger;
+
+    public ClusterGetCommand(ILogger<ClusterGetCommand> logger)
+    {
+        _logger = logger;
+    }
+
+    protected override string GetCommandName() => "get";
+
+    protected override string GetCommandDescription() =>
+        """
+        Get details for a specific Azure Data Explorer (Kusto) cluster. Requires --cluster-name and --subscription.
+        """;
+
+    [McpServerTool(Destructive = false, ReadOnly = true)]
+    public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
+    {
+        var args = BindArguments(parseResult);
+        try
+        {
+            if (!await ProcessArguments(context, args))
+                return context.Response;
+
+            var dataExplorerService = context.GetService<IDataExplorerService>();
+            var cluster = await dataExplorerService.GetCluster(
+                args.Subscription!,
+                args.Cluster!,
+                args.Tenant,
+                args.RetryPolicy);
+
+            context.Response.Results = cluster != null ? new { cluster } : null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting Data Explorer cluster details");
+            HandleException(context.Response, ex);
+        }
+        return context.Response;
+    }
+}

@@ -262,6 +262,39 @@ public static class ArgumentDefinitions
         }
     }
 
+    public static class DataExplorer
+    {
+        public const string ClusterName = "cluster-name";
+        public const string Uri = "cluster-uri";
+        public const string DatabaseName = "database-name";
+        public const string QueryText = "query";
+
+
+        public static readonly ArgumentDefinition<string> Cluster = new(
+            ClusterName,
+            "Azure Data Explorer (Kusto) Cluster name.",
+            required: true
+        );
+
+        public static readonly ArgumentDefinition<string> ClusterUri = new(
+            Uri,
+            "Azure Data Explorer (Kusto) Cluster URI.",
+            required: false
+        );
+
+        public static readonly ArgumentDefinition<string> Database = new(
+            DatabaseName,
+            "Azure Data Explorer (Kusto) Database name.",
+            required: true
+        );
+
+        public static readonly ArgumentDefinition<string> Query = new(
+            QueryText,
+            "Kusto query to execute. Uses KQL syntax.",
+            required: true
+        );
+    }
+
     public static class Extension
     {
         public static class Az

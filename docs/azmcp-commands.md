@@ -136,6 +136,24 @@ azmcp extension az --command "storage account show --name <account-name> --resou
 azmcp extension az --command "vm list --resource-group <resource-group>"
 ```
 
+### Data Explorer Operations
+```bash
+# List Data Explorer clusters in a subscription
+azmcp data-explorer cluster list --subscription <subscription>
+
+# Get details for a Data Explorer cluster
+azmcp data-explorer cluster get --subscription <subscription> --cluster-name <cluster-name>
+
+# List databases in a Data Explorer cluster
+azmcp data-explorer database list --subscription <subscription> --cluster-uri <cluster-name>
+
+# Query a Data Explorer database
+azmcp data-explorer query --subscription <subscription> \
+                          --cluster-uri <cluster-name> \
+                          --database-name <database-name> \
+                          [--query "<kql-query>"]
+```
+
 ## Response Format
 
 All responses follow a consistent JSON format:

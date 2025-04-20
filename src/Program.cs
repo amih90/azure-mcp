@@ -6,6 +6,7 @@ using AzureMcp.Extensions;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Azure.AppConfig;
 using AzureMcp.Services.Azure.Cosmos;
+using AzureMcp.Services.Azure.DataExplorer;
 using AzureMcp.Services.Azure.Monitor;
 using AzureMcp.Services.Azure.ResourceGroup;
 using AzureMcp.Services.Azure.Storage;
@@ -62,5 +63,6 @@ static void ConfigureServices(IServiceCollection services)
     services.AddSingleton<IMonitorService, MonitorService>();
     services.AddSingleton<IResourceGroupService, ResourceGroupService>();
     services.AddSingleton<IAppConfigService, AppConfigService>();
+    services.AddSingleton<IDataExplorerService, DataExplorerService>();
     services.AddSingleton<CommandFactory>();
 }

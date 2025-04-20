@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Commands.Cosmos;
+using AzureMcp.Commands.DataExplorer;
 using AzureMcp.Commands.Server;
 using AzureMcp.Commands.Storage.Blob;
 using AzureMcp.Commands.Subscription;
@@ -58,6 +59,7 @@ public class CommandFactory
     {
         // Register top-level command groups
         RegisterCosmosCommands();
+        RegisterDataExplorerCommands();
         RegisterStorageCommands();
         RegisterMonitorCommands();
         RegisterAppConfigCommands();
@@ -89,10 +91,29 @@ public class CommandFactory
         cosmosContainer.AddSubGroup(cosmosItem);
 
         // Register Cosmos commands
-        databases.AddCommand("list", new DatabaseListCommand(GetLogger<DatabaseListCommand>()));
+        databases.AddCommand("list", new Cosmos.DatabaseListCommand(GetLogger<Cosmos.DatabaseListCommand>()));
         cosmosContainer.AddCommand("list", new Cosmos.ContainerListCommand(GetLogger<Cosmos.ContainerListCommand>()));
         cosmosAccount.AddCommand("list", new Cosmos.AccountListCommand(GetLogger<Cosmos.AccountListCommand>()));
-        cosmosItem.AddCommand("query", new ItemQueryCommand(GetLogger<ItemQueryCommand>()));
+        cosmosItem.AddCommand("query", new Cosmos.ItemQueryCommand(GetLogger<Cosmos.ItemQueryCommand>()));
+    }
+
+    private void RegisterDataExplorerCommands()
+    {
+        // Create Data Explorer command group
+        var dataExplorer = new CommandGroup("data-explorer", "Azure Data Explorer (Kusto) operations - Commands for managing and querying Azure Data Explorer clusters.");
+        _rootGroup.AddSubGroup(dataExplorer);
+
+        // Create Data Explorer subgroups
+        var clusters = new CommandGroup("cluster", "Data Explorer cluster operations - Commands for listing clusters in your Azure subscription.");
+        dataExplorer.AddSubGroup(clusters);
+        var databases = new CommandGroup("database", "Data Explorer database operations - Commands for listing databases in a cluster.");
+        dataExplorer.AddSubGroup(databases);
+
+        // Register Data Explorer commands
+        clusters.AddCommand("list", new DataExplorer.ClusterListCommand(GetLogger<DataExplorer.ClusterListCommand>()));
+        clusters.AddCommand("get", new DataExplorer.ClusterGetCommand(GetLogger<DataExplorer.ClusterGetCommand>()));
+        databases.AddCommand("list", new AzureMcp.Commands.DataExplorer.DatabaseListCommand(GetLogger<AzureMcp.Commands.DataExplorer.DatabaseListCommand>()));
+        dataExplorer.AddCommand("query", new DataExplorer.QueryCommand(GetLogger<DataExplorer.QueryCommand>()));
     }
 
     private void RegisterStorageCommands()
