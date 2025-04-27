@@ -1,10 +1,10 @@
-﻿using AzureMcp.Tests.Client.Helpers;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using AzureMcp.Tests.Client.Helpers;
 using ModelContextProtocol.Client;
 using System.Text.Json;
 using Xunit;
-using Xunit.Abstractions;
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
 
 namespace AzureMcp.Tests.Client;
 
@@ -21,7 +21,7 @@ public abstract class CommandTestsBase(McpClientFixture mcpClient, LiveTestSetti
         var result = await Client.CallToolAsync(command, parameters);
 
         var content = result.Content.FirstOrDefault(c => c.MimeType == "application/json")?.Text;
-        if(string.IsNullOrWhiteSpace(content))
+        if (string.IsNullOrWhiteSpace(content))
         {
             Output.WriteLine($"response: {JsonSerializer.Serialize(result)}");
             throw new Exception("No JSON content found in the response.");
