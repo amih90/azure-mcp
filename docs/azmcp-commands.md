@@ -151,7 +151,7 @@ azmcp data-explorer database list --subscription <subscription> --cluster-uri <c
 azmcp data-explorer query --subscription <subscription> \
                           --cluster-uri <cluster-name> \
                           --database-name <database-name> \
-                          [--query "<kql-query>"]
+                          --query "<kql-query>"
 ```
 
 ## Response Format

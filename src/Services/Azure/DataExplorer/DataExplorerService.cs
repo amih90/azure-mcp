@@ -137,7 +137,8 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
                 return new KustoConnectionStringBuilder(connectionString);
             case AuthMethod.Credential:
             default:
-                var builder = new KustoConnectionStringBuilder(uri).WithAadAzureTokenCredentialsAuthentication(GetCredential(tenant));
+                var credential = GetCredential(tenant).GetAwaiter().GetResult();
+                var builder = new KustoConnectionStringBuilder(uri).WithAadAzureTokenCredentialsAuthentication(credential);
                 if (!string.IsNullOrEmpty(tenant))
                 {
                     builder.Authority = $"https://login.microsoftonline.com/{tenant}";
