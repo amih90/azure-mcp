@@ -79,7 +79,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
     {
         ValidateRequiredParameters(subscriptionId, clusterUri);
 
-        var kcsb = CreateKustoConnectionStringBuilder(
+        var kcsb = await CreateKustoConnectionStringBuilder(
             clusterUri,
             authMethod,
             null,
@@ -99,7 +99,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
     {
         ValidateRequiredParameters(subscriptionId, clusterUri, databaseName, query);
 
-        var kcsb = CreateKustoConnectionStringBuilder(
+        var kcsb = await CreateKustoConnectionStringBuilder(
             clusterUri,
             authMethod,
             null,
@@ -121,7 +121,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         return results;
     }
 
-    private KustoConnectionStringBuilder CreateKustoConnectionStringBuilder(
+    private async Task<KustoConnectionStringBuilder> CreateKustoConnectionStringBuilder(
         string uri,
         AuthMethod? authMethod,
         string? connectionString = null,
@@ -137,7 +137,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
                 return new KustoConnectionStringBuilder(connectionString);
             case AuthMethod.Credential:
             default:
-                var credential = GetCredential(tenant).GetAwaiter().GetResult();
+                var credential = await GetCredential(tenant);
                 var builder = new KustoConnectionStringBuilder(uri).WithAadAzureTokenCredentialsAuthentication(credential);
                 if (!string.IsNullOrEmpty(tenant))
                 {
