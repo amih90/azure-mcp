@@ -28,7 +28,7 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
         available in the specified subscription. Results include cluster names and are returned as a JSON array.
         """;
 
-    [McpServerTool(Destructive = false, ReadOnly = true)]
+    [McpServerTool(Destructive = true, ReadOnly = false)]
     public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
     {
         var args = BindArguments(parseResult);
