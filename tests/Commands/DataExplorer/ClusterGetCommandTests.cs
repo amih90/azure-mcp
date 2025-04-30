@@ -74,10 +74,10 @@ public sealed class ClusterGetCommandTests
     [Fact]
     public async Task ExecuteAsync_HandlesException_AndSetsException()
     {
-        var expectedError = "Test error";
+        var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         _dataExplorerService.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
-            .ThrowsAsync(new Exception(expectedError));
+            .ThrowsAsync(new Exception("Test error"));
         var command = new ClusterGetCommand(_logger);
         var parser = new Parser(command.GetCommand());
         var args = parser.Parse("--subscription sub123 --cluster-name clusterA");
