@@ -90,7 +90,7 @@
             }
         },
         {
-            "name": "Debug Data Explorer Databases List Global",
+            "name": "Debug Data Explorer Databases List with Cluster URI",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -98,7 +98,7 @@
             "args": [
                 "data-explorer",
                 "database",
-                "list-global",
+                "list",
                 "--cluster-uri",
                 "${input:dataExplorerClusterUri}"
             ],
@@ -135,14 +135,14 @@
             }
         },
         {
-            "name": "Debug Data Explorer Query Global",
+            "name": "Debug Data Explorer Query with Cluster URI",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
                 "data-explorer",
-                "query-global",
+                "query",
                 "--cluster-uri",
                 "${input:dataExplorerClusterUri}",
                 "--database-name",

@@ -116,9 +116,6 @@ public class CommandFactory
 
         databases.AddCommand("list", new DataExplorer.DatabaseListCommand(GetLogger<DataExplorer.DatabaseListCommand>()));
         dataExplorer.AddCommand("query", new DataExplorer.QueryCommand(GetLogger<DataExplorer.QueryCommand>()));
-
-        databases.AddCommand("list-global", new DataExplorer.DatabaseListGlobalCommand(GetLogger<DataExplorer.DatabaseListGlobalCommand>()));
-        dataExplorer.AddCommand("query-global", new DataExplorer.QueryGlobalCommand(GetLogger<DataExplorer.QueryGlobalCommand>()));
     }
 
     private void RegisterStorageCommands()

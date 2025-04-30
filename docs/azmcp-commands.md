@@ -57,20 +57,12 @@ azmcp data-explorer cluster list --subscription <subscription>
 azmcp data-explorer cluster get --subscription <subscription> --cluster-name <cluster-name>
 
 # List databases in a Data Explorer cluster
-azmcp data-explorer database list --subscription <subscription> 
-                                  --cluster-name <cluster-name>
-
-azmcp data-explorer database list-global --cluster-uri <cluster-uri>      
+azmcp data-explorer database list [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
 
 # Query a Data Explorer database
-azmcp data-explorer query --subscription <subscription> \
-                          --cluster-name <cluster-name> \
+azmcp data-explorer query [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
                           --database-name <database-name> \
                           --query "<kql-query>"
-
-azmcp data-explorer query-global --cluster-uri <cluster-uri> \
-                                 --database-name <database-name> \
-                                 --query "<kql-query>"
 ```
 
 ### Storage Operations

@@ -32,17 +32,34 @@ public sealed class DatabaseListCommandTests
         _serviceProvider = collection.BuildServiceProvider();
     }
 
-    [Fact]
-    public async Task ExecuteAsync_ReturnsDatabases_WhenDatabasesExist()
+    public static IEnumerable<object[]> DatabaseArgumentMatrix()
+    {
+        yield return new object[] { "--subscription sub1 --cluster-name mycluster", false };
+        yield return new object[] { "--cluster-uri https://mycluster.kusto.windows.net", true };
+    }
+
+    [Theory]
+    [MemberData(nameof(DatabaseArgumentMatrix))]
+    public async Task ExecuteAsync_ReturnsDatabases(string cliArgs, bool useClusterUri)
     {
         // Arrange
         var expectedDatabases = new List<string> { "db1", "db2" };
-        _dataExplorerService.ListDatabases(
-            "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(expectedDatabases);
+        if (useClusterUri)
+        {
+            _dataExplorerService.ListDatabases(
+                "https://mycluster.kusto.windows.net",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(expectedDatabases);
+        }
+        else
+        {
+            _dataExplorerService.ListDatabases(
+                "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(expectedDatabases);
+        }
         var command = new DatabaseListCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-name mycluster");
+        var args = parser.Parse(cliArgs);
         var context = new CommandContext(_serviceProvider);
 
         // Act
@@ -57,37 +74,65 @@ public sealed class DatabaseListCommandTests
         Assert.Equal(expectedDatabases, result.Databases);
     }
 
-    [Fact]
-    public async Task ExecuteAsync_ReturnsNull_WhenNoDatabasesExist()
+    [Theory]
+    [MemberData(nameof(DatabaseArgumentMatrix))]
+    public async Task ExecuteAsync_ReturnsNull_WhenNoDatabasesExist(string cliArgs, bool useClusterUri)
     {
-        _dataExplorerService.ListDatabases(
-            "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-            .Returns([]);
+        // Arrange
+        if (useClusterUri)
+        {
+            _dataExplorerService.ListDatabases(
+                "https://mycluster.kusto.windows.net",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns([]);
+        }
+        else
+        {
+            _dataExplorerService.ListDatabases(
+                "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns([]);
+        }
         var command = new DatabaseListCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-name mycluster");
+        var args = parser.Parse(cliArgs);
         var context = new CommandContext(_serviceProvider);
 
+        // Act
         var response = await command.ExecuteAsync(context, args);
 
+        // Assert
         Assert.NotNull(response);
         Assert.Null(response.Results);
     }
 
-    [Fact]
-    public async Task ExecuteAsync_HandlesException_AndSetsException()
+    [Theory]
+    [MemberData(nameof(DatabaseArgumentMatrix))]
+    public async Task ExecuteAsync_HandlesException_AndSetsException(string cliArgs, bool useClusterUri)
     {
+        // Arrange
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
-        _dataExplorerService.ListDatabases(
-            "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(Task.FromException<List<string>>(new Exception("Test error")));
+        if (useClusterUri)
+        {
+            _dataExplorerService.ListDatabases(
+                "https://mycluster.kusto.windows.net",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(Task.FromException<List<string>>(new Exception("Test error")));
+        }
+        else
+        {
+            _dataExplorerService.ListDatabases(
+                "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(Task.FromException<List<string>>(new Exception("Test error")));
+        }
         var command = new DatabaseListCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-name mycluster");
+        var args = parser.Parse(cliArgs);
         var context = new CommandContext(_serviceProvider);
 
+        // Act
         var response = await command.ExecuteAsync(context, args);
 
+        // Assert
         Assert.NotNull(response);
         Assert.Equal(500, response.Status);
         Assert.Equal(expectedError, response.Message);
@@ -95,6 +140,21 @@ public sealed class DatabaseListCommandTests
 
     [Fact]
     public async Task ExecuteAsync_ReturnsBadRequest_WhenMissingRequiredArguments()
+    {
+        var command = new DatabaseListCommand(_logger);
+        var parser = new Parser(command.GetCommand());
+        var args = parser.Parse(""); // No arguments
+        var context = new CommandContext(_serviceProvider);
+
+        var response = await command.ExecuteAsync(context, args);
+
+        Assert.NotNull(response);
+        Assert.Equal(400, response.Status);
+        Assert.Contains("Missing required", response.Message, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ReturnsBadRequest_WhenMissingAllRequiredArguments()
     {
         var command = new DatabaseListCommand(_logger);
         var parser = new Parser(command.GetCommand());

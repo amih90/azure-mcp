@@ -39,7 +39,7 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
             var dataExplorerService = context.GetService<IDataExplorerService>();
             var cluster = await dataExplorerService.GetCluster(
                 args.Subscription!,
-                args.Cluster!,
+                args.ClusterName!,
                 args.Tenant,
                 args.RetryPolicy);
 

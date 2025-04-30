@@ -70,6 +70,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId, clusterName);
+        
         var subscription = await _subscriptionService.GetSubscription(subscriptionId, tenant, retryPolicy);
         await foreach (var cluster in subscription.GetKustoClustersAsync())
         {

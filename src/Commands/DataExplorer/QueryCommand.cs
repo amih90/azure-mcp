@@ -8,6 +8,7 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
+using System.Text.Json;
 
 namespace AzureMcp.Commands.DataExplorer;
 
@@ -36,15 +37,30 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
+            List<JsonDocument> results = [];
             var dataExplorerService = context.GetService<IDataExplorerService>();
-            var results = await dataExplorerService.QueryItems(
-                args.Subscription!,
-                args.ClusterName!,
-                args.Database!,
-                args.Query!,
-                args.Tenant,
-                args.AuthMethod,
-                args.RetryPolicy);
+
+            if (UseClusterUri(args))
+            {
+                results = await dataExplorerService.QueryItems(
+                    args.ClusterUri!,
+                    args.Database!,
+                    args.Query!,
+                    args.Tenant,
+                    args.AuthMethod,
+                    args.RetryPolicy);
+            }
+            else
+            {
+                results = await dataExplorerService.QueryItems(
+                    args.Subscription!,
+                    args.ClusterName!,
+                    args.Database!,
+                    args.Query!,
+                    args.Tenant,
+                    args.AuthMethod,
+                    args.RetryPolicy);
+            }
 
             context.Response.Results = results?.Count > 0 ?
                 new { results } :

@@ -33,17 +33,37 @@ public sealed class QueryCommandTests
         _serviceProvider = collection.BuildServiceProvider();
     }
 
-    [Fact]
-    public async Task ExecuteAsync_ReturnsQueryResults_WhenQuerySucceeds()
+    public static IEnumerable<object[]> QueryArgumentMatrix()
+    {
+        yield return new object[] { "--subscription sub1 --cluster-name mycluster --database-name db1 --query \"StormEvents | take 1\"", false };
+        yield return new object[] { "--cluster-uri https://mycluster.kusto.windows.net --database-name db1 --query \"StormEvents | take 1\"", true };
+    }
+
+    [Theory]
+    [MemberData(nameof(QueryArgumentMatrix))]
+    public async Task ExecuteAsync_ReturnsQueryResults(string cliArgs, bool useClusterUri)
     {
         // Arrange
         var expectedJson = JsonDocument.Parse("{\"foo\":42}");
-        _dataExplorerService.QueryItems(
-            "sub1", "mycluster", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(new List<JsonDocument> { expectedJson });
+        if (useClusterUri)
+        {
+            _dataExplorerService.QueryItems(
+                "https://mycluster.kusto.windows.net",
+                "db1",
+                "StormEvents | take 1",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(new List<JsonDocument> { expectedJson });
+        }
+        else
+        {
+            _dataExplorerService.QueryItems(
+                "sub1", "mycluster", "db1", "StormEvents | take 1",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(new List<JsonDocument> { expectedJson });
+        }
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-name mycluster --database-name db1 --query \"StormEvents | take 1\"");
+        var args = parser.Parse(cliArgs);
         var context = new CommandContext(_serviceProvider);
 
         // Act
@@ -61,15 +81,29 @@ public sealed class QueryCommandTests
         Assert.Equal(expectedJsonText, actualJson);
     }
 
-    [Fact]
-    public async Task ExecuteAsync_ReturnsNull_WhenNoResults()
+    [Theory]
+    [MemberData(nameof(QueryArgumentMatrix))]
+    public async Task ExecuteAsync_ReturnsNull_WhenNoResults(string cliArgs, bool useClusterUri)
     {
-        _dataExplorerService.QueryItems(
-            "sub1", "mycluster", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(new List<JsonDocument>());
+        if (useClusterUri)
+        {
+            _dataExplorerService.QueryItems(
+                "https://mycluster.kusto.windows.net",
+                "db1",
+                "StormEvents | take 1",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(new List<JsonDocument>());
+        }
+        else
+        {
+            _dataExplorerService.QueryItems(
+                "sub1", "mycluster", "db1", "StormEvents | take 1",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(new List<JsonDocument>());
+        }
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-name mycluster --database-name db1 --query \"StormEvents | take 1\"");
+        var args = parser.Parse(cliArgs);
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);
@@ -78,16 +112,30 @@ public sealed class QueryCommandTests
         Assert.Null(response.Results);
     }
 
-    [Fact]
-    public async Task ExecuteAsync_HandlesException_AndSetsException()
+    [Theory]
+    [MemberData(nameof(QueryArgumentMatrix))]
+    public async Task ExecuteAsync_HandlesException_AndSetsException(string cliArgs, bool useClusterUri)
     {
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
-        _dataExplorerService.QueryItems(
-            "sub1", "mycluster", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(Task.FromException<List<JsonDocument>>(new Exception("Test error")));
+        if (useClusterUri)
+        {
+            _dataExplorerService.QueryItems(
+                "https://mycluster.kusto.windows.net",
+                "db1",
+                "StormEvents | take 1",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(Task.FromException<List<JsonDocument>>(new Exception("Test error")));
+        }
+        else
+        {
+            _dataExplorerService.QueryItems(
+                "sub1", "mycluster", "db1", "StormEvents | take 1",
+                Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+                .Returns(Task.FromException<List<JsonDocument>>(new Exception("Test error")));
+        }
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-name mycluster --database-name db1 --query \"StormEvents | take 1\"");
+        var args = parser.Parse(cliArgs);
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);

@@ -37,12 +37,26 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
                 return context.Response;
 
             var dataExplorerService = context.GetService<IDataExplorerService>();
-            var databases = await dataExplorerService.ListDatabases(
-                args.Subscription!,
-                args.ClusterName!,
-                args.Tenant,
-                args.AuthMethod,
-                args.RetryPolicy);
+
+            List<string> databases = [];
+
+            if (UseClusterUri(args))
+            {
+                databases = await dataExplorerService.ListDatabases(
+                    args.ClusterUri!,
+                    args.Tenant,
+                    args.AuthMethod,
+                    args.RetryPolicy);
+            }
+            else
+            {
+                databases = await dataExplorerService.ListDatabases(
+                    args.Subscription!,
+                    args.ClusterName!,
+                    args.Tenant,
+                    args.AuthMethod,
+                    args.RetryPolicy);
+            }
 
             context.Response.Results = databases?.Count > 0 ? new { databases } : null;
         }

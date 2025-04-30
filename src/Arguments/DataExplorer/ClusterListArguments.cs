@@ -3,4 +3,4 @@
 
 namespace AzureMcp.Arguments.DataExplorer;
 
-public class ClusterListArguments : SubscriptionArguments;
+public class ClusterListArguments : BaseClusterArguments;

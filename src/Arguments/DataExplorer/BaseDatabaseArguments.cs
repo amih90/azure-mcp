@@ -6,8 +6,8 @@ using System.Text.Json.Serialization;
 
 namespace AzureMcp.Arguments.DataExplorer;
 
-public class BaseDatabaseArguments : SubscriptionArguments
+public class BaseDatabaseArguments : BaseClusterArguments
 {
-    [JsonPropertyName(ArgumentDefinitions.DataExplorer.ClusterName)]
-    public string? ClusterName { get; set; }
+    [JsonPropertyName(ArgumentDefinitions.DataExplorer.DatabaseName)]
+    public string? Database { get; set; }
 }

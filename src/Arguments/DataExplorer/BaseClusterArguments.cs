@@ -9,5 +9,8 @@ namespace AzureMcp.Arguments.DataExplorer;
 public class BaseClusterArguments : SubscriptionArguments
 {
     [JsonPropertyName(ArgumentDefinitions.DataExplorer.ClusterName)]
-    public string? Cluster { get; set; }
+    public string? ClusterName { get; set; }
+
+    [JsonPropertyName(ArgumentDefinitions.DataExplorer.ClusterUriName)]
+    public string? ClusterUri { get; set; }
 }
