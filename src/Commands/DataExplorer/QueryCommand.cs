@@ -39,7 +39,7 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
             var dataExplorerService = context.GetService<IDataExplorerService>();
             var results = await dataExplorerService.QueryItems(
                 args.Subscription!,
-                args.ClusterUri!,
+                args.ClusterName!,
                 args.Database!,
                 args.Query!,
                 args.Tenant,
@@ -52,8 +52,8 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterUri: {ClusterUri}, Database: {Database}," 
-            + " Query: {Query}", args.ClusterUri, args.Database, args.Query);
+            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterName: {ClusterName}, Database: {Database}," 
+            + " Query: {Query}", args.ClusterName, args.Database, args.Query);
             HandleException(context.Response, ex);
         }
         return context.Response;

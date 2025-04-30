@@ -39,11 +39,11 @@ public sealed class QueryCommandTests
         // Arrange
         var expectedJson = JsonDocument.Parse("{\"foo\":42}");
         _dataExplorerService.QueryItems(
-            "sub1", "https://mycluster.eastus.kusto.windows.net", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+            "sub1", "mycluster", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
             .Returns(new List<JsonDocument> { expectedJson });
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-uri https://mycluster.eastus.kusto.windows.net --database-name db1 --query \"StormEvents | take 1\"");
+        var args = parser.Parse("--subscription sub1 --cluster-name mycluster --database-name db1 --query \"StormEvents | take 1\"");
         var context = new CommandContext(_serviceProvider);
 
         // Act
@@ -65,11 +65,11 @@ public sealed class QueryCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoResults()
     {
         _dataExplorerService.QueryItems(
-            "sub1", "https://mycluster.eastus.kusto.windows.net", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+            "sub1", "mycluster", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
             .Returns(new List<JsonDocument>());
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-uri https://mycluster.eastus.kusto.windows.net --database-name db1 --query \"StormEvents | take 1\"");
+        var args = parser.Parse("--subscription sub1 --cluster-name mycluster --database-name db1 --query \"StormEvents | take 1\"");
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);
@@ -81,13 +81,13 @@ public sealed class QueryCommandTests
     [Fact]
     public async Task ExecuteAsync_HandlesException_AndSetsException()
     {
-        var expectedError = "Test error";
+        var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         _dataExplorerService.QueryItems(
-            "sub1", "https://mycluster.eastus.kusto.windows.net", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(Task.FromException<List<JsonDocument>>(new Exception(expectedError)));
+            "sub1", "mycluster", "db1", "StormEvents | take 1", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+            .Returns(Task.FromException<List<JsonDocument>>(new Exception("Test error")));
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-uri https://mycluster.eastus.kusto.windows.net --database-name db1 --query \"StormEvents | take 1\"");
+        var args = parser.Parse("--subscription sub1 --cluster-name mycluster --database-name db1 --query \"StormEvents | take 1\"");
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);

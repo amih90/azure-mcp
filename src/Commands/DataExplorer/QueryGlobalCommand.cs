@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments.DataExplorer;
-using AzureMcp.Models;
+using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -11,20 +11,20 @@ using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.DataExplorer;
 
-public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArguments>
+public sealed class QueryGlobalCommand : BaseQueryGlobalCommand<QueryGlobalArguments>
 {
-    private readonly ILogger<DatabaseListCommand> _logger;
+    private readonly ILogger<QueryGlobalCommand> _logger;
 
-    public DatabaseListCommand(ILogger<DatabaseListCommand> logger) : base()
+    public QueryGlobalCommand(ILogger<QueryGlobalCommand> logger) : base()
     {
         _logger = logger;
     }
 
-    protected override string GetCommandName() => "list";
+    protected override string GetCommandName() => "query-global";
 
     protected override string GetCommandDescription() =>
         """
-        List all databases in a Data Explorer cluster. This command retrieves all databases available in the specified cluster and subscription. Results include database names and are returned as a JSON array.
+        Execute a KQL against items in a Data Explorer cluster. Requires cluster-uri, database, and query. Results are returned as a JSON array of documents.
         """;
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
@@ -37,18 +37,22 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
                 return context.Response;
 
             var dataExplorerService = context.GetService<IDataExplorerService>();
-            var databases = await dataExplorerService.ListDatabases(
-                args.Subscription!,
-                args.ClusterName!,
+            var results = await dataExplorerService.QueryItems(
+                args.ClusterUri!,
+                args.Database!,
+                args.Query!,
                 args.Tenant,
                 args.AuthMethod,
                 args.RetryPolicy);
 
-            context.Response.Results = databases?.Count > 0 ? new { databases } : null;
+            context.Response.Results = results?.Count > 0 ?
+                new { results } :
+                null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred listing databases. ClusterName: {ClusterName}.", args.ClusterName);
+            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterUri: {ClusterUri}, Database: {Database}," 
+            + " Query: {Query}", args.ClusterUri, args.Database, args.Query);
             HandleException(context.Response, ex);
         }
         return context.Response;

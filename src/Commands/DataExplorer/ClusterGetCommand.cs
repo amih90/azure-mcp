@@ -24,6 +24,7 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
     protected override string GetCommandDescription() =>
         """
         Get details for a specific Azure Data Explorer (Kusto) cluster. Requires --cluster-name and --subscription.
+        The response includes the clusterUri property for use in subsequent commands.
         """;
 
     [McpServerTool(Destructive = false, ReadOnly = true)]

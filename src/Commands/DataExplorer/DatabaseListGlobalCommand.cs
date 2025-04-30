@@ -11,16 +11,16 @@ using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.DataExplorer;
 
-public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArguments>
+public sealed class DatabaseListGlobalCommand : BaseDatabaseGlobalCommand<DatabaseListGlobalArguments>
 {
-    private readonly ILogger<DatabaseListCommand> _logger;
+    private readonly ILogger<DatabaseListGlobalCommand> _logger;
 
-    public DatabaseListCommand(ILogger<DatabaseListCommand> logger) : base()
+    public DatabaseListGlobalCommand(ILogger<DatabaseListGlobalCommand> logger) : base()
     {
         _logger = logger;
     }
 
-    protected override string GetCommandName() => "list";
+    protected override string GetCommandName() => "list-global";
 
     protected override string GetCommandDescription() =>
         """
@@ -38,8 +38,7 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
 
             var dataExplorerService = context.GetService<IDataExplorerService>();
             var databases = await dataExplorerService.ListDatabases(
-                args.Subscription!,
-                args.ClusterName!,
+                args.ClusterUri!,
                 args.Tenant,
                 args.AuthMethod,
                 args.RetryPolicy);
@@ -48,7 +47,7 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred listing databases. ClusterName: {ClusterName}.", args.ClusterName);
+            _logger.LogError(ex, "An exception occurred listing databases. ClusterUri: {ClusterUri}.", args.ClusterUri);
             HandleException(context.Response, ex);
         }
         return context.Response;

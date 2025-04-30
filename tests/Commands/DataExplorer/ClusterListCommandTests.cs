@@ -86,7 +86,7 @@ public sealed class ClusterListCommandTests
     public async Task ExecuteAsync_HandlesException_AndSetsException()
     {
         // Arrange
-        var expectedError = "Test error";
+        var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         var subscriptionId = "sub123";
         var defaultRetryPolicy = new RetryPolicyArguments
         {
@@ -99,7 +99,7 @@ public sealed class ClusterListCommandTests
         
         // Arrange
         _dataExplorerService.ListClusters(subscriptionId, null, defaultRetryPolicy)
-            .ThrowsAsync(new Exception(expectedError));
+            .ThrowsAsync(new Exception("Test error"));
 
         var command = new ClusterListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", subscriptionId]);

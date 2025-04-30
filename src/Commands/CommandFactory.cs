@@ -103,17 +103,22 @@ public class CommandFactory
         var dataExplorer = new CommandGroup("data-explorer", "Azure Data Explorer (Kusto) operations - Commands for managing and querying Azure Data Explorer clusters.");
         _rootGroup.AddSubGroup(dataExplorer);
 
-        // Create Data Explorer subgroups
+        // Create Data Explorer cluster subgroups
         var clusters = new CommandGroup("cluster", "Data Explorer cluster operations - Commands for listing clusters in your Azure subscription.");
         dataExplorer.AddSubGroup(clusters);
+
         var databases = new CommandGroup("database", "Data Explorer database operations - Commands for listing databases in a cluster.");
         dataExplorer.AddSubGroup(databases);
 
-        // Register Data Explorer commands
+        // Register Data Explorer commands using cluster-uri
         clusters.AddCommand("list", new DataExplorer.ClusterListCommand(GetLogger<DataExplorer.ClusterListCommand>()));
         clusters.AddCommand("get", new DataExplorer.ClusterGetCommand(GetLogger<DataExplorer.ClusterGetCommand>()));
-        databases.AddCommand("list", new AzureMcp.Commands.DataExplorer.DatabaseListCommand(GetLogger<AzureMcp.Commands.DataExplorer.DatabaseListCommand>()));
+
+        databases.AddCommand("list", new DataExplorer.DatabaseListCommand(GetLogger<DataExplorer.DatabaseListCommand>()));
         dataExplorer.AddCommand("query", new DataExplorer.QueryCommand(GetLogger<DataExplorer.QueryCommand>()));
+
+        databases.AddCommand("list-global", new DataExplorer.DatabaseListGlobalCommand(GetLogger<DataExplorer.DatabaseListGlobalCommand>()));
+        dataExplorer.AddCommand("query-global", new DataExplorer.QueryGlobalCommand(GetLogger<DataExplorer.QueryGlobalCommand>()));
     }
 
     private void RegisterStorageCommands()

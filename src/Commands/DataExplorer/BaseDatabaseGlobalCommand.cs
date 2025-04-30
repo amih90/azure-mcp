@@ -8,20 +8,20 @@ using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.DataExplorer;
 
-public abstract class BaseDatabaseCommand<TArgs> : SubscriptionCommand<TArgs> where TArgs : BaseDatabaseArguments, new()
+public abstract class BaseDatabaseGlobalCommand<TArgs> : GlobalCommand<TArgs> where TArgs : BaseClusterGlobalArguments, new()
 {
-    protected readonly Option<string> _clusterNameOption = ArgumentDefinitions.DataExplorer.Cluster.ToOption();
+    protected readonly Option<string> _clusterUriOption = ArgumentDefinitions.DataExplorer.Uri.ToOption();
 
     protected override void RegisterOptions(Command command)
     {
         base.RegisterOptions(command);
-        command.AddOption(_clusterNameOption);
+        command.AddOption(_clusterUriOption);
     }
 
     protected override TArgs BindArguments(ParseResult parseResult)
     {
         var args = base.BindArguments(parseResult);
-        args.ClusterName = parseResult.GetValueForOption(_clusterNameOption);
+        args.ClusterUri = parseResult.GetValueForOption(_clusterUriOption);
         return args;
     }
 }

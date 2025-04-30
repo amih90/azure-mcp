@@ -79,6 +79,26 @@
                 "list",
                 "--subscription",
                 "${input:subscription}",
+                "--cluster-name",
+                "${input:dataExplorerClusterName}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Debug Data Explorer Databases List Global",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
+            "args": [
+                "data-explorer",
+                "database",
+                "list-global",
                 "--cluster-uri",
                 "${input:dataExplorerClusterUri}"
             ],
@@ -100,6 +120,29 @@
                 "query",
                 "--subscription",
                 "${input:subscription}",
+                "--cluster-name",
+                "${input:dataExplorerClusterName}",
+                "--database-name",
+                "${input:dataExplorerDatabaseName}",
+                "--query",
+                "${input:dataExplorerQuery}",
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Debug Data Explorer Query Global",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
+            "args": [
+                "data-explorer",
+                "query-global",
                 "--cluster-uri",
                 "${input:dataExplorerClusterUri}",
                 "--database-name",

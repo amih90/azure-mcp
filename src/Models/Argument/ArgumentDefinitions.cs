@@ -265,7 +265,7 @@ public static class ArgumentDefinitions
     public static class DataExplorer
     {
         public const string ClusterName = "cluster-name";
-        public const string Uri = "cluster-uri";
+        public const string UriName = "cluster-uri";
         public const string DatabaseName = "database-name";
         public const string QueryText = "query";
 
@@ -276,8 +276,8 @@ public static class ArgumentDefinitions
             required: true
         );
 
-        public static readonly ArgumentDefinition<string> ClusterUri = new(
-            Uri,
+        public static readonly ArgumentDefinition<string> Uri = new(
+            UriName,
             "Azure Data Explorer (Kusto) Cluster URI.",
             required: false
         );

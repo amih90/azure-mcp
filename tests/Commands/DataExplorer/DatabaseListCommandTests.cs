@@ -38,11 +38,11 @@ public sealed class DatabaseListCommandTests
         // Arrange
         var expectedDatabases = new List<string> { "db1", "db2" };
         _dataExplorerService.ListDatabases(
-            "sub1", "https://mycluster.eastus.kusto.windows.net", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+            "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
             .Returns(expectedDatabases);
         var command = new DatabaseListCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-uri https://mycluster.eastus.kusto.windows.net");
+        var args = parser.Parse("--subscription sub1 --cluster-name mycluster");
         var context = new CommandContext(_serviceProvider);
 
         // Act
@@ -61,11 +61,11 @@ public sealed class DatabaseListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoDatabasesExist()
     {
         _dataExplorerService.ListDatabases(
-            "sub1", "https://mycluster.eastus.kusto.windows.net", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+            "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
             .Returns([]);
         var command = new DatabaseListCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-uri https://mycluster.eastus.kusto.windows.net");
+        var args = parser.Parse("--subscription sub1 --cluster-name mycluster");
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);
@@ -77,13 +77,13 @@ public sealed class DatabaseListCommandTests
     [Fact]
     public async Task ExecuteAsync_HandlesException_AndSetsException()
     {
-        var expectedError = "Test error";
+        var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         _dataExplorerService.ListDatabases(
-            "sub1", "https://mycluster.eastus.kusto.windows.net", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(Task.FromException<List<string>>(new Exception(expectedError)));
+            "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
+            .Returns(Task.FromException<List<string>>(new Exception("Test error")));
         var command = new DatabaseListCommand(_logger);
         var parser = new Parser(command.GetCommand());
-        var args = parser.Parse("--subscription sub1 --cluster-uri https://mycluster.eastus.kusto.windows.net");
+        var args = parser.Parse("--subscription sub1 --cluster-name mycluster");
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);

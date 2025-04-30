@@ -24,7 +24,10 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
     private const string DATA_EXPLORER_CLUSTERS_CACHE_KEY = "adx_clusters";
     private static readonly TimeSpan CACHE_DURATION = TimeSpan.FromHours(1);
 
-    public async Task<List<string>> ListClusters(string subscriptionId, string? tenant = null, RetryPolicyArguments? retryPolicy = null)
+    public async Task<List<string>> ListClusters(
+        string subscriptionId, 
+        string? tenant = null, 
+        RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId);
 
@@ -60,7 +63,11 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         return clusters;
     }
 
-    public async Task<JsonDocument> GetCluster(string subscriptionId, string clusterName, string? tenant = null, RetryPolicyArguments? retryPolicy = null)
+    public async Task<JsonDocument> GetCluster(
+        string subscriptionId, 
+        string clusterName, 
+        string? tenant = null, 
+        RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId, clusterName);
         var subscription = await _subscriptionService.GetSubscription(subscriptionId, tenant, retryPolicy);
@@ -75,9 +82,31 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         throw new Exception($"Data Explorer cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
     }
 
-    public async Task<List<string>> ListDatabases(string subscriptionId, string clusterUri, string? tenant = null, AuthMethod? authMethod = AuthMethod.Credential, RetryPolicyArguments? retryPolicy = null)
+    public async Task<List<string>> ListDatabases(
+        string subscriptionId, 
+        string clusterName, 
+        string? tenant = null, 
+        AuthMethod? authMethod = 
+        AuthMethod.Credential, 
+        RetryPolicyArguments? retryPolicy = null)
     {
-        ValidateRequiredParameters(subscriptionId, clusterUri);
+        ValidateRequiredParameters(subscriptionId, clusterName);
+
+        string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
+
+        return await ListDatabases(clusterUri, tenant, authMethod, retryPolicy);
+    }
+
+    public async Task<List<string>> ListDatabases(
+        string clusterUri, 
+        string? tenant = null, 
+        AuthMethod? authMethod = AuthMethod.Credential, 
+        RetryPolicyArguments? retryPolicy = null)
+    {
+        ValidateRequiredParameters(clusterUri);
+
+        var clusterName = GetClusterNameFromUri(clusterUri);
+        ValidateRequiredParameters(clusterName);
 
         var kcsb = await CreateKustoConnectionStringBuilder(
             clusterUri,
@@ -86,7 +115,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
             tenant);
 
         using var queryProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
-        var reader = await queryProvider.ExecuteControlCommandAsync("romealertsdeveus", ".show databases", null);
+        var reader = await queryProvider.ExecuteControlCommandAsync(clusterName, ".show databases", null);
         var result = new List<string>();
         while (reader.Read())
         {
@@ -95,9 +124,48 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         return result;
     }
 
-    public async Task<List<JsonDocument>> QueryItems(string subscriptionId, string clusterUri, string databaseName, string query, string? tenant = null, AuthMethod? authMethod = AuthMethod.Credential, RetryPolicyArguments? retryPolicy = null)
+    public async Task<List<JsonDocument>> QueryItems(
+        string subscriptionId, 
+        string clusterName, 
+        string databaseName, 
+        string query, 
+        string? tenant = null, 
+        AuthMethod? authMethod = AuthMethod.Credential, 
+        RetryPolicyArguments? retryPolicy = null)
     {
-        ValidateRequiredParameters(subscriptionId, clusterUri, databaseName, query);
+        ValidateRequiredParameters(subscriptionId, clusterName, databaseName, query);
+
+        string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
+
+        return await QueryItems(clusterUri, databaseName, query, tenant, authMethod, retryPolicy);
+    }
+
+    private async Task<string> GetClusterUri(string subscriptionId, string clusterName, string? tenant, RetryPolicyArguments? retryPolicy)
+    {
+        var cluster = await GetCluster(subscriptionId, clusterName, tenant, retryPolicy) ?? throw new Exception($"Data Explorer cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
+
+        if (!cluster.RootElement.TryGetProperty("ClusterUri", out var clusterUriElement))
+        {
+            throw new Exception($"Could not retrieve URI for cluster '{clusterName}'");
+        }
+
+        var clusterUri = clusterUriElement.GetString();
+        if (string.IsNullOrEmpty(clusterUri))
+        {
+            throw new Exception($"Could not retrieve URI for cluster '{clusterName}'");
+        }
+
+        return clusterUri!;
+    }
+
+    public async Task<List<JsonDocument>> QueryItems(
+        string clusterUri, 
+        string databaseName, 
+        string query, string? tenant = null, 
+        AuthMethod? authMethod = AuthMethod.Credential, 
+        RetryPolicyArguments? retryPolicy = null)
+    {
+        ValidateRequiredParameters(clusterUri, databaseName, query);
 
         var kcsb = await CreateKustoConnectionStringBuilder(
             clusterUri,
@@ -108,16 +176,25 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         using var queryProvider = KustoClientFactory.CreateCslQueryProvider(kcsb);
         var reader = await queryProvider.ExecuteQueryAsync(databaseName, query, null);
         var results = new List<JsonDocument>();
-        while (reader.Read())
+
+        try
         {
-            var dict = new Dictionary<string, object?>();
-            for (int i = 0; i < reader.FieldCount; i++)
+            while (reader.Read())
             {
-                dict[reader.GetName(i)] = reader.GetValue(i);
+                var dict = new Dictionary<string, object?>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    dict[reader.GetName(i)] = reader.GetValue(i);
+                }
+                var json = JsonSerializer.SerializeToDocument(dict);
+                results.Add(json);
             }
-            var json = JsonSerializer.SerializeToDocument(dict);
-            results.Add(json);
         }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error executing query: {ex.Message}", ex);
+        }
+        
         return results;
     }
 
@@ -145,5 +222,15 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
                 }
                 return builder;
         }
+    }
+
+    public static string GetClusterNameFromUri(string clusterUri)
+    {
+        ValidateRequiredParameters(clusterUri);
+
+        var uri = new Uri(clusterUri);
+        var host = uri.Host;
+        var clusterName = host.Split('.')[0];
+        return clusterName;
     }
 }
