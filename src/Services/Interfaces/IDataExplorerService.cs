@@ -46,4 +46,36 @@ public interface IDataExplorerService
         string? tenant = null,
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null);
+
+    Task<List<string>> ListTables(
+        string clusterUri,
+        string databaseName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null);
+
+    Task<List<string>> ListTables(
+        string subscriptionId,
+        string clusterName,
+        string databaseName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null);
+
+    Task<List<JsonDocument>> GetTableSchema(
+        string clusterUri,
+        string databaseName,
+        string tableName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null);
+
+    Task<List<JsonDocument>> GetTableSchema(
+        string subscriptionId,
+        string clusterName,
+        string databaseName,
+        string tableName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null);
 }

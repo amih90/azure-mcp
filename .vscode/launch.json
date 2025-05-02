@@ -26,7 +26,7 @@
             }
         },
         {
-            "name": "Debug Data Explorer Clusters List",
+            "name": "Debug Data Explorer Cluster List",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -68,7 +68,7 @@
             }
         },
         {
-            "name": "Debug Data Explorer Databases List",
+            "name": "Debug Data Explorer Database List",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -101,6 +101,105 @@
                 "list",
                 "--cluster-uri",
                 "${input:dataExplorerClusterUri}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Debug Data Explorer Table List",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
+            "args": [
+                "data-explorer",
+                "table",
+                "list",
+                "--subscription",
+                "${input:subscription}",
+                "--cluster-name",
+                "${input:dataExplorerClusterName}",
+                "--database-name",
+                "${input:dataExplorerDatabaseName}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Debug Data Explorer Table List with Cluster URI",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
+            "args": [
+                "data-explorer",
+                "table",
+                "list",
+                "--cluster-uri",
+                "${input:dataExplorerClusterUri}",
+                "--database-name",
+                "${input:dataExplorerDatabaseName}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Debug Data Explorer Table Schema",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
+            "args": [
+                "data-explorer",
+                "table",
+                "schema",
+                "--subscription",
+                "${input:subscription}",
+                "--cluster-name",
+                "${input:dataExplorerClusterName}",
+                "--database-name",
+                "${input:dataExplorerDatabaseName}",
+                "--table-name",
+                "${input:dataExplorerTableName}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Debug Data Explorer Sample",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
+            "args": [
+                "data-explorer",
+                "sample",
+                "--subscription",
+                "${input:subscription}",
+                "--cluster-name",
+                "${input:dataExplorerClusterName}",
+                "--database-name",
+                "${input:dataExplorerDatabaseName}",
+                "--table-name",
+                "${input:dataExplorerTableName}",
+                "--limit",
+                "1"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -311,15 +410,15 @@
             "default": ""
         },
         {
-            "id": "dataExplorerClusterName",
+            "id": "dataExplorerClusterUri",
             "type": "promptString",
-            "description": "Data Explorer Cluster Name",
+            "description": "Data Explorer Cluster URI (e.g. https://<cluster>.<region>.kusto.windows.net)",
             "default": ""
         },
         {
-            "id": "dataExplorerQuery",
+            "id": "dataExplorerClusterName",
             "type": "promptString",
-            "description": "Kusto Query (KQL)",
+            "description": "Data Explorer Cluster Name",
             "default": ""
         },
         {
@@ -329,9 +428,15 @@
             "default": ""
         },
         {
-            "id": "dataExplorerClusterUri",
+            "id": "dataExplorerTableName",
             "type": "promptString",
-            "description": "Data Explorer Cluster URI (e.g. https://<cluster>.<region>.kusto.windows.net)",
+            "description": "Data Explorer Table Name",
+            "default": ""
+        },
+        {
+            "id": "dataExplorerQuery",
+            "type": "promptString",
+            "description": "Kusto Query (KQL)",
             "default": ""
         },
         {

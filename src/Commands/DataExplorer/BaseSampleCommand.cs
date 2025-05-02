@@ -8,23 +8,20 @@ using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.DataExplorer;
 
-public abstract class BaseDatabaseCommand<TArgs> : BaseClusterCommand<TArgs> where TArgs : BaseDatabaseArguments, new()
+public abstract class BaseSampleCommand<TArgs> : BaseTableCommand<TArgs> where TArgs : SampleArguments, new()
 {
-    protected readonly Option<string> _databaseOption = ArgumentDefinitions.DataExplorer.Database.ToOption();
-
-    protected static bool UseClusterUri(BaseDatabaseArguments args) => 
-        !string.IsNullOrEmpty(args.ClusterUri);
+    protected readonly Option<int> _limitOption = ArgumentDefinitions.DataExplorer.Limit.ToOption();
 
     protected override void RegisterOptions(Command command)
     {
         base.RegisterOptions(command);
-        command.AddOption(_databaseOption);
+        command.AddOption(_limitOption);
     }
 
     protected override TArgs BindArguments(ParseResult parseResult)
     {
         var args = base.BindArguments(parseResult);
-        args.Database = parseResult.GetValueForOption(_databaseOption);
+        args.Limit = parseResult.GetValueForOption(_limitOption);
         return args;
     }
 }

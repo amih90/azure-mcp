@@ -94,7 +94,6 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         ValidateRequiredParameters(subscriptionId, clusterName);
 
         string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
-
         return await ListDatabases(clusterUri, tenant, authMethod, retryPolicy);
     }
 
@@ -121,6 +120,85 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         while (reader.Read())
         {
             result.Add(reader["DatabaseName"].ToString()!);
+        }
+        return result;
+    }
+
+    public async Task<List<string>> ListTables(
+        string subscriptionId,
+        string clusterName,
+        string databaseName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null)
+    {
+        ValidateRequiredParameters(subscriptionId, clusterName, databaseName);
+
+        var clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
+        return await ListTables(clusterUri, databaseName, tenant, authMethod, retryPolicy);
+    }
+
+    public async Task<List<string>> ListTables(
+        string clusterUri,
+        string databaseName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null)
+    {
+        ValidateRequiredParameters(clusterUri, databaseName);
+
+        var clusterName = GetClusterNameFromUri(clusterUri);
+        ValidateRequiredParameters(clusterName);
+
+        var kcsb = await CreateKustoConnectionStringBuilder(
+            clusterUri, 
+            authMethod, 
+            null, 
+            tenant);
+
+        using var queryProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
+        var reader = await queryProvider.ExecuteControlCommandAsync(databaseName, ".show tables", null);
+        var result = new List<string>();
+        while (reader.Read())
+        {
+            result.Add(reader["TableName"].ToString()!);
+        }
+        return result;
+    }
+
+    public async Task<List<JsonDocument>> GetTableSchema(
+        string subscriptionId,
+        string clusterName,
+        string databaseName,
+        string tableName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null)
+    {
+        var clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
+        return await GetTableSchema(clusterUri, databaseName, tableName, tenant, authMethod, retryPolicy);
+    }
+
+    public async Task<List<JsonDocument>> GetTableSchema(
+        string clusterUri,
+        string databaseName,
+        string tableName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null)
+    {
+        ValidateRequiredParameters(clusterUri, databaseName, tableName);
+        var kcsb = await CreateKustoConnectionStringBuilder(clusterUri, authMethod, null, tenant);
+        using var queryProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
+        var command = $".show table {tableName} schema as json";
+        var reader = await queryProvider.ExecuteControlCommandAsync(databaseName, command, null);
+        var result = new List<JsonDocument>();
+        while (reader.Read())
+        {
+            var jsonString = reader["Schema"].ToString()!;
+            var json = JsonDocument.Parse(jsonString);
+            result.Add(json);
+            
         }
         return result;
     }

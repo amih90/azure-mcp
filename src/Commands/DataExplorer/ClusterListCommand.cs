@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments.DataExplorer;
-using AzureMcp.Models;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;

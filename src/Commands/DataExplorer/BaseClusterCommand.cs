@@ -1,10 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using AzureMcp.Models.Argument;
 using AzureMcp.Arguments.DataExplorer;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using AzureMcp.Services.Interfaces;
 using AzureMcp.Models.Command;
-using AzureMcp.Arguments;
 
 namespace AzureMcp.Commands.DataExplorer;
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -11,21 +12,14 @@ using System.Text.Json;
 
 namespace AzureMcp.Commands.DataExplorer;
 
-public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
+public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : BaseTableCommand<TableSchemaArguments>
 {
-    private readonly ILogger<QueryCommand> _logger;
+    private readonly ILogger<TableSchemaCommand> _logger = logger;
 
-    public QueryCommand(ILogger<QueryCommand> logger) : base()
-    {
-        _logger = logger;
-    }
-
-    protected override string GetCommandName() => "query";
+    protected override string GetCommandName() => "schema";
 
     protected override string GetCommandDescription() =>
-        """
-        Execute a KQL against items in a Data Explorer cluster. Requires cluster-uri, database, and query. Results are returned as a JSON array of documents.
-        """;
+        "Get the schema of a specific table in an Azure Data Explorer (Kusto) database.";
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
     public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
@@ -36,37 +30,36 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            List<JsonDocument> results = [];
             var dataExplorerService = context.GetService<IDataExplorerService>();
+            List<JsonDocument> schema;
 
             if (UseClusterUri(args))
             {
-                results = await dataExplorerService.QueryItems(
+                schema = await dataExplorerService.GetTableSchema(
                     args.ClusterUri!,
                     args.Database!,
-                    args.Query!,
+                    args.Table!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
             else
             {
-                results = await dataExplorerService.QueryItems(
+                schema = await dataExplorerService.GetTableSchema(
                     args.Subscription!,
                     args.ClusterName!,
                     args.Database!,
-                    args.Query!,
+                    args.Table!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
 
-            context.Response.Results = results?.Count > 0 ? results : null;
+            context.Response.Results = schema?.Count > 0 ? new { schema } : null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterName: {ClusterName}, Database: {Database}," 
-            + " Query: {Query}", args.ClusterName, args.Database, args.Query);
+            _logger.LogError(ex, "An exception occurred getting table schema. Table: {Table}.", args.Table);
             HandleException(context.Response, ex);
         }
         return context.Response;

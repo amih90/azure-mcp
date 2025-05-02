@@ -11,21 +11,14 @@ using System.Text.Json;
 
 namespace AzureMcp.Commands.DataExplorer;
 
-public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
+public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCommand<SampleArguments>
 {
-    private readonly ILogger<QueryCommand> _logger;
+    private readonly ILogger<SampleCommand> _logger = logger;
 
-    public QueryCommand(ILogger<QueryCommand> logger) : base()
-    {
-        _logger = logger;
-    }
-
-    protected override string GetCommandName() => "query";
+    protected override string GetCommandName() => "sample";
 
     protected override string GetCommandDescription() =>
-        """
-        Execute a KQL against items in a Data Explorer cluster. Requires cluster-uri, database, and query. Results are returned as a JSON array of documents.
-        """;
+        "Return a sample of rows from the specified table in an Azure Data Explorer (Kusto) table.";
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
     public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
@@ -36,15 +29,16 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            List<JsonDocument> results = [];
             var dataExplorerService = context.GetService<IDataExplorerService>();
+            List<JsonDocument> results;
+            var query = $"{args.Table} | sample {args.Limit}";
 
             if (UseClusterUri(args))
             {
                 results = await dataExplorerService.QueryItems(
                     args.ClusterUri!,
                     args.Database!,
-                    args.Query!,
+                    query,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
@@ -55,7 +49,7 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
                     args.Subscription!,
                     args.ClusterName!,
                     args.Database!,
-                    args.Query!,
+                    query,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
@@ -65,8 +59,7 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterName: {ClusterName}, Database: {Database}," 
-            + " Query: {Query}", args.ClusterName, args.Database, args.Query);
+            _logger.LogError(ex, "An exception occurred sampling table. Table: {Table}.", args.Table);
             HandleException(context.Response, ex);
         }
         return context.Response;

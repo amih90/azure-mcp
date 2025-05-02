@@ -267,6 +267,8 @@ public static class ArgumentDefinitions
         public const string ClusterName = "cluster-name";
         public const string ClusterUriName = "cluster-uri";
         public const string DatabaseName = "database-name";
+        public const string TableName = "table-name";
+        public const string LimitName = "limit";
         public const string QueryText = "query";
 
 
@@ -285,6 +287,19 @@ public static class ArgumentDefinitions
         public static readonly ArgumentDefinition<string> Database = new(
             DatabaseName,
             "Azure Data Explorer (Kusto) Database name.",
+            required: true
+        );
+
+        public static readonly ArgumentDefinition<string> Table = new(
+            TableName,
+            "Azure Data Explorer (Kusto) Table name.",
+            required: true
+        );
+
+        public static readonly ArgumentDefinition<int> Limit = new(
+            LimitName,
+            "The maximum number of results to return.",
+            defaultValue: 10,
             required: true
         );
 

@@ -7,25 +7,17 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
-using System.Text.Json;
 
 namespace AzureMcp.Commands.DataExplorer;
 
-public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
+public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseDatabaseCommand<TableListArguments>
 {
-    private readonly ILogger<QueryCommand> _logger;
+    private readonly ILogger<TableListCommand> _logger = logger;
 
-    public QueryCommand(ILogger<QueryCommand> logger) : base()
-    {
-        _logger = logger;
-    }
-
-    protected override string GetCommandName() => "query";
+    protected override string GetCommandName() => "list";
 
     protected override string GetCommandDescription() =>
-        """
-        Execute a KQL against items in a Data Explorer cluster. Requires cluster-uri, database, and query. Results are returned as a JSON array of documents.
-        """;
+        "List all tables in a specific Azure Data Explorer (Kusto) database.";
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
     public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
@@ -36,37 +28,34 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            List<JsonDocument> results = [];
             var dataExplorerService = context.GetService<IDataExplorerService>();
+            List<string> tables = [];
 
             if (UseClusterUri(args))
             {
-                results = await dataExplorerService.QueryItems(
+                tables = await dataExplorerService.ListTables(
                     args.ClusterUri!,
                     args.Database!,
-                    args.Query!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
             else
             {
-                results = await dataExplorerService.QueryItems(
+                tables = await dataExplorerService.ListTables(
                     args.Subscription!,
                     args.ClusterName!,
                     args.Database!,
-                    args.Query!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
 
-            context.Response.Results = results?.Count > 0 ? results : null;
+            context.Response.Results = tables?.Count > 0 ? new { tables } : null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterName: {ClusterName}, Database: {Database}," 
-            + " Query: {Query}", args.ClusterName, args.Database, args.Query);
+            _logger.LogError(ex, "An exception occurred listing tables. Database: {Database}.", args.Database);
             HandleException(context.Response, ex);
         }
         return context.Response;

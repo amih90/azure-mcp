@@ -110,12 +110,19 @@ public class CommandFactory
         var databases = new CommandGroup("database", "Data Explorer database operations - Commands for listing databases in a cluster.");
         dataExplorer.AddSubGroup(databases);
 
-        // Register Data Explorer commands using cluster-uri
+        var tables = new CommandGroup("table", "Data Explorer table operations - Commands for listing tables in a database.");
+        dataExplorer.AddSubGroup(tables);
+
+        dataExplorer.AddCommand("sample", new DataExplorer.SampleCommand(GetLogger<DataExplorer.SampleCommand>()));
+        dataExplorer.AddCommand("query", new DataExplorer.QueryCommand(GetLogger<DataExplorer.QueryCommand>()));
+
         clusters.AddCommand("list", new DataExplorer.ClusterListCommand(GetLogger<DataExplorer.ClusterListCommand>()));
         clusters.AddCommand("get", new DataExplorer.ClusterGetCommand(GetLogger<DataExplorer.ClusterGetCommand>()));
 
         databases.AddCommand("list", new DataExplorer.DatabaseListCommand(GetLogger<DataExplorer.DatabaseListCommand>()));
-        dataExplorer.AddCommand("query", new DataExplorer.QueryCommand(GetLogger<DataExplorer.QueryCommand>()));
+
+        tables.AddCommand("list", new DataExplorer.TableListCommand(GetLogger<DataExplorer.TableListCommand>()));
+        tables.AddCommand("schema", new DataExplorer.TableSchemaCommand(GetLogger<DataExplorer.TableSchemaCommand>()));
     }
 
     private void RegisterStorageCommands()
