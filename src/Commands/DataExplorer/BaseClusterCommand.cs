@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Models.Argument;
 using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Models.Argument;
+using AzureMcp.Models.Command;
+using AzureMcp.Services.Interfaces;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using AzureMcp.Services.Interfaces;
-using AzureMcp.Models.Command;
 
 namespace AzureMcp.Commands.DataExplorer;
 
@@ -79,15 +79,11 @@ public abstract class BaseClusterCommand<TArgs> : SubscriptionCommand<TArgs> whe
         ArgumentBuilder<TArgs>
             .Create(ArgumentDefinitions.DataExplorer.ClusterUri.Name, ArgumentDefinitions.DataExplorer.ClusterUri.Description)
             .WithValueAccessor(args => args.ClusterUri ?? string.Empty)
-            .WithSuggestedValuesLoader(async (context, args) =>
-                await GetClusterOptions(context, args.Subscription ?? string.Empty))
             .WithIsRequired(ArgumentDefinitions.DataExplorer.ClusterUri.Required);
 
     protected ArgumentBuilder<TArgs> CreateClusterNameArgument() =>
         ArgumentBuilder<TArgs>
             .Create(ArgumentDefinitions.DataExplorer.Cluster.Name, ArgumentDefinitions.DataExplorer.Cluster.Description)
             .WithValueAccessor(args => args.ClusterName ?? string.Empty)
-            .WithSuggestedValuesLoader(async (context, args) =>
-                await GetClusterOptions(context, args.Subscription ?? string.Empty))
             .WithIsRequired(ArgumentDefinitions.DataExplorer.Cluster.Required);
 }

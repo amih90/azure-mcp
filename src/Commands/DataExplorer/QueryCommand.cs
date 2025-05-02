@@ -65,7 +65,7 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterName: {ClusterName}, Database: {Database}," 
+            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterName: {ClusterName}, Database: {Database},"
             + " Query: {Query}", args.ClusterName, args.Database, args.Query);
             HandleException(context.Response, ex);
         }

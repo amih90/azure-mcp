@@ -42,8 +42,8 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = clusters?.Count > 0 ? 
-            new { clusters } : 
+            context.Response.Results = clusters?.Count > 0 ?
+            new { clusters } :
             null;
         }
         catch (Exception ex)

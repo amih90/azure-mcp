@@ -43,7 +43,7 @@ public sealed class ClusterListCommandTests
         _dataExplorerService.ListClusters(
             "sub123", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
             .Returns(expectedClusters);
-        
+
         var command = new ClusterListCommand(_logger);
         var args = command.GetCommand().Parse(["--subscription", "sub123"]);
         var context = new CommandContext(_serviceProvider);
@@ -96,7 +96,7 @@ public sealed class ClusterListCommandTests
             Mode = ArgumentDefinitions.RetryPolicy.Mode.DefaultValue,
             NetworkTimeoutSeconds = ArgumentDefinitions.RetryPolicy.NetworkTimeout.DefaultValue
         };
-        
+
         // Arrange
         _dataExplorerService.ListClusters(subscriptionId, null, defaultRetryPolicy)
             .ThrowsAsync(new Exception("Test error"));

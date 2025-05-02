@@ -1,19 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Azure.Identity;
-using Azure.ResourceManager;
 using Azure.ResourceManager.Kusto;
-using Azure.ResourceManager.Kusto.Models;
 using AzureMcp.Arguments;
 using AzureMcp.Models;
-using AzureMcp.Models.Argument;
 using AzureMcp.Services.Interfaces;
 using Kusto.Data;
-using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
+using System.Text.Json;
 
 namespace AzureMcp.Services.Azure.DataExplorer;
 
@@ -25,8 +16,8 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
     private static readonly TimeSpan CACHE_DURATION = TimeSpan.FromHours(1);
 
     public async Task<List<string>> ListClusters(
-        string subscriptionId, 
-        string? tenant = null, 
+        string subscriptionId,
+        string? tenant = null,
         RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId);
@@ -35,14 +26,14 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         var cacheKey = string.IsNullOrEmpty(tenant)
             ? $"{DATA_EXPLORER_CLUSTERS_CACHE_KEY}_{subscriptionId}"
             : $"{DATA_EXPLORER_CLUSTERS_CACHE_KEY}_{subscriptionId}_{tenant}";
-        
+
         // Try to get from cache first
         var cachedClusters = await _cacheService.GetAsync<List<string>>(cacheKey, CACHE_DURATION);
         if (cachedClusters != null)
         {
             return cachedClusters;
         }
-        
+
         var subscription = await _subscriptionService.GetSubscription(subscriptionId, tenant, retryPolicy);
         var clusters = new List<string>();
         try
@@ -64,13 +55,13 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
     }
 
     public async Task<JsonDocument> GetCluster(
-        string subscriptionId, 
-        string clusterName, 
-        string? tenant = null, 
+        string subscriptionId,
+        string clusterName,
+        string? tenant = null,
         RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId, clusterName);
-        
+
         var subscription = await _subscriptionService.GetSubscription(subscriptionId, tenant, retryPolicy);
         await foreach (var cluster in subscription.GetKustoClustersAsync())
         {
@@ -84,11 +75,11 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
     }
 
     public async Task<List<string>> ListDatabases(
-        string subscriptionId, 
-        string clusterName, 
-        string? tenant = null, 
-        AuthMethod? authMethod = 
-        AuthMethod.Credential, 
+        string subscriptionId,
+        string clusterName,
+        string? tenant = null,
+        AuthMethod? authMethod =
+        AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId, clusterName);
@@ -98,9 +89,9 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
     }
 
     public async Task<List<string>> ListDatabases(
-        string clusterUri, 
-        string? tenant = null, 
-        AuthMethod? authMethod = AuthMethod.Credential, 
+        string clusterUri,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(clusterUri);
@@ -151,9 +142,9 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         ValidateRequiredParameters(clusterName);
 
         var kcsb = await CreateKustoConnectionStringBuilder(
-            clusterUri, 
-            authMethod, 
-            null, 
+            clusterUri,
+            authMethod,
+            null,
             tenant);
 
         using var queryProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
@@ -198,18 +189,18 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
             var jsonString = reader["Schema"].ToString()!;
             var json = JsonDocument.Parse(jsonString);
             result.Add(json);
-            
+
         }
         return result;
     }
 
     public async Task<List<JsonDocument>> QueryItems(
-        string subscriptionId, 
-        string clusterName, 
-        string databaseName, 
-        string query, 
-        string? tenant = null, 
-        AuthMethod? authMethod = AuthMethod.Credential, 
+        string subscriptionId,
+        string clusterName,
+        string databaseName,
+        string query,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId, clusterName, databaseName, query);
@@ -238,10 +229,10 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
     }
 
     public async Task<List<JsonDocument>> QueryItems(
-        string clusterUri, 
-        string databaseName, 
-        string query, string? tenant = null, 
-        AuthMethod? authMethod = AuthMethod.Credential, 
+        string clusterUri,
+        string databaseName,
+        string query, string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(clusterUri, databaseName, query);
@@ -251,7 +242,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
             authMethod,
             null,
             tenant);
-            
+
         using var queryProvider = KustoClientFactory.CreateCslQueryProvider(kcsb);
         var reader = await queryProvider.ExecuteQueryAsync(databaseName, query, null);
         var results = new List<JsonDocument>();
@@ -273,7 +264,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         {
             throw new Exception($"Error executing query: {ex.Message}", ex);
         }
-        
+
         return results;
     }
 

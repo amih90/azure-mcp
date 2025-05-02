@@ -12,8 +12,7 @@ public abstract class BaseDatabaseCommand<TArgs> : BaseClusterCommand<TArgs> whe
 {
     protected readonly Option<string> _databaseOption = ArgumentDefinitions.DataExplorer.Database.ToOption();
 
-    protected static bool UseClusterUri(BaseDatabaseArguments args) => 
-        !string.IsNullOrEmpty(args.ClusterUri);
+    protected static bool UseClusterUri(BaseDatabaseArguments args) => !string.IsNullOrEmpty(args.ClusterUri);
 
     protected override void RegisterOptions(Command command)
     {

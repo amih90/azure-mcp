@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments; // For RetryPolicyArguments
 using AzureMcp.Commands.DataExplorer;
-using AzureMcp.Models.Argument;
+using AzureMcp.Models; // For AuthMethod
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,8 +11,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System.CommandLine.Parsing;
 using Xunit;
-using AzureMcp.Models; // For AuthMethod
-using AzureMcp.Arguments; // For RetryPolicyArguments
 
 namespace AzureMcp.Tests.Commands.DataExplorer;
 
