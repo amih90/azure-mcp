@@ -71,6 +71,14 @@ Test requirements:
 - Mock external service calls
 - Test argument validation
 
+## Installing Git Hooks
+
+To ensure consistent code quality, the pre-commit hook is automatically installed before every build. This hook will ensure that your code adheres to the required standards.
+
+### Automatic Setup
+
+The pre-commit hook is installed automatically when you build the project. You do not need to run any additional commands. The hook is located in the `Scripts/git-hooks/` directory and is copied to the `.git/hooks/` folder during the build process.
+
 ## Code Style
 
 Run `dotnet format src/AzureMcp.sln` before submitting.
