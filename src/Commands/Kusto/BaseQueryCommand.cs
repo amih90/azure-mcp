@@ -5,10 +5,13 @@ using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Argument;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AzureMcp.Commands.Kusto;
 
-public abstract class BaseQueryCommand<TArgs> : BaseDatabaseCommand<TArgs> where TArgs : QueryArguments, new()
+public abstract class BaseQueryCommand<
+    [DynamicallyAccessedMembers(TrimAnnotations.CommandAnnotations)] TArgs>
+    : BaseDatabaseCommand<TArgs> where TArgs : QueryArguments, new()
 {
     protected readonly Option<string> _queryOption = ArgumentDefinitions.Kusto.Query.ToOption();
 

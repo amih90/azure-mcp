@@ -5,10 +5,13 @@ using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Argument;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AzureMcp.Commands.Kusto;
 
-public abstract class BaseSampleCommand<TArgs> : BaseTableCommand<TArgs> where TArgs : SampleArguments, new()
+public abstract class BaseSampleCommand<
+    [DynamicallyAccessedMembers(TrimAnnotations.CommandAnnotations)] TArgs>
+    : BaseTableCommand<TArgs> where TArgs : SampleArguments, new()
 {
     protected readonly Option<int> _limitOption = ArgumentDefinitions.Kusto.Limit.ToOption();
 

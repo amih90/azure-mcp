@@ -7,10 +7,13 @@ using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AzureMcp.Commands.Kusto;
 
-public abstract class BaseClusterCommand<TArgs> : SubscriptionCommand<TArgs> where TArgs : BaseClusterArguments, new()
+public abstract class BaseClusterCommand<
+    [DynamicallyAccessedMembers(TrimAnnotations.CommandAnnotations)] TArgs>
+    : SubscriptionCommand<TArgs> where TArgs : BaseClusterArguments, new()
 {
     protected readonly Option<string> _clusterNameOption = ArgumentDefinitions.Kusto.Cluster.ToOption();
     protected readonly Option<string> _clusterUriOption = ArgumentDefinitions.Kusto.ClusterUri.ToOption();
