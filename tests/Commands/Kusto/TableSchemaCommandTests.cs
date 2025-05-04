@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System.CommandLine.Parsing;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace AzureMcp.Tests.Commands.Kusto;
@@ -39,9 +40,9 @@ public sealed class TableSchemaCommandTests
     [MemberData(nameof(TableSchemaArgumentMatrix))]
     public async Task ExecuteAsync_ReturnsSchema(string cliArgs, bool useClusterUri)
     {
-        var expectedSchema = new List<System.Text.Json.JsonDocument> {
-            System.Text.Json.JsonDocument.Parse("{\"Name\":\"col1\",\"Type\":\"string\"}"),
-            System.Text.Json.JsonDocument.Parse("{\"Name\":\"col2\",\"Type\":\"int\"}")
+        var expectedSchema = new List<JsonNode> {
+            JsonNode.Parse("{\"Name\":\"col1\",\"Type\":\"string\"}")!,
+            JsonNode.Parse("{\"Name\":\"col2\",\"Type\":\"int\"}")!
         };
         if (useClusterUri)
         {
@@ -67,11 +68,13 @@ public sealed class TableSchemaCommandTests
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
-        var schema = response.Results?.GetType().GetProperty("schema")?.GetValue(response.Results) as List<System.Text.Json.JsonDocument>;
-        Assert.NotNull(schema);
-        Assert.Equal(2, schema?.Count);
-        Assert.Equal("col1", schema![0].RootElement.GetProperty("Name").GetString());
-        Assert.Equal("col2", schema![1].RootElement.GetProperty("Name").GetString());
+        var json = System.Text.Json.JsonSerializer.Serialize(response.Results);
+        var result = System.Text.Json.JsonSerializer.Deserialize<TableSchemaResult>(json);
+        Assert.NotNull(result);
+        Assert.NotNull(result.Schema);
+        Assert.Equal(2, result.Schema.Count);
+        Assert.Equal("col1", result.Schema[0]["Name"]?.ToString());
+        Assert.Equal("col2", result.Schema[1]["Name"]?.ToString());
     }
 
     [Theory]
@@ -85,14 +88,14 @@ public sealed class TableSchemaCommandTests
                 "db1",
                 "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<System.Text.Json.JsonDocument>());
+                .Returns(new List<JsonNode>());
         }
         else
         {
             _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<System.Text.Json.JsonDocument>());
+                .Returns(new List<JsonNode>());
         }
         var command = new TableSchemaCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -116,14 +119,14 @@ public sealed class TableSchemaCommandTests
                 "db1",
                 "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<System.Text.Json.JsonDocument>>(new Exception("Test error")));
+                .Returns(Task.FromException<List<JsonNode>>(new Exception("Test error")));
         }
         else
         {
             _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<System.Text.Json.JsonDocument>>(new Exception("Test error")));
+                .Returns(Task.FromException<List<JsonNode>>(new Exception("Test error")));
         }
         var command = new TableSchemaCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -147,5 +150,11 @@ public sealed class TableSchemaCommandTests
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.Equal(400, response.Status);
+    }
+
+    private sealed class TableSchemaResult
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("schema")]
+        public List<JsonNode> Schema { get; set; } = new();
     }
 }

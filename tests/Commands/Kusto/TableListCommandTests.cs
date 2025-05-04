@@ -11,7 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System.CommandLine.Parsing;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Xunit;
+using static AzureMcp.Commands.Kusto.TableListCommand;
 
 namespace AzureMcp.Tests.Commands.Kusto;
 
@@ -62,11 +65,15 @@ public sealed class TableListCommandTests
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);
+        
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
-        var tables = response.Results?.GetType().GetProperty("tables")?.GetValue(response.Results) as List<string>;
-        Assert.NotNull(tables);
-        Assert.Equal(2, tables?.Count);
+
+        var json = JsonSerializer.Serialize(response.Results);
+        var result = JsonSerializer.Deserialize<TablesListResult>(json);
+                
+        Assert.NotNull(result);
+        Assert.Equal(2, result?.Tables?.Count);
     }
 
     [Theory]
@@ -140,5 +147,11 @@ public sealed class TableListCommandTests
         var response = await command.ExecuteAsync(context, args);
         Assert.NotNull(response);
         Assert.Equal(400, response.Status);
+    }
+
+    private sealed class TablesListResult
+    {
+        [JsonPropertyName("tables")]
+        public List<string>? Tables { get; set; }
     }
 }

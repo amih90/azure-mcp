@@ -7,6 +7,7 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
+using System.Text.Json.Nodes;
 
 namespace AzureMcp.Commands.Kusto;
 
@@ -43,7 +44,9 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = cluster != null ? new { cluster } : null;
+            context.Response.Results = cluster != null ?
+                ResponseResult.Create(new ClusterGetCommandResult(cluster), KustoJsonContext.Default.ClusterGetCommandResult) :
+                null;
         }
         catch (Exception ex)
         {
@@ -52,4 +55,6 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
         }
         return context.Response;
     }
+
+    internal record ClusterGetCommandResult(JsonNode Cluster);
 }

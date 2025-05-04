@@ -1,5 +1,6 @@
 using Azure.ResourceManager.Kusto;
 using AzureMcp.Arguments;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 using AzureMcp.Services.Interfaces;
 using Kusto.Data;
@@ -7,7 +8,7 @@ using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace AzureMcp.Services.Azure.Kusto;
 
@@ -68,7 +69,19 @@ public sealed class KustoService(
         return clusters;
     }
 
-    public async Task<JsonDocument> GetCluster(
+    private static async Task<string> GetClusterUri(string subscriptionId, string clusterName, string? tenant, RetryPolicyArguments? retryPolicy)
+    {
+        var kustoService = new KustoService(null!, null!); // This should be replaced with DI or refactored for static context
+        var cluster = await kustoService.GetCluster(subscriptionId, clusterName, tenant, retryPolicy);
+        if (cluster is null)
+            throw new Exception($"Kusto cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
+        var clusterUri = cluster?["clusterUri"]?.ToString();
+        if (string.IsNullOrEmpty(clusterUri))
+            throw new Exception($"Could not retrieve URI for cluster '{clusterName}'");
+        return clusterUri!;
+    }
+
+    public async Task<JsonNode> GetCluster(
         string subscriptionId,
         string clusterName,
         string? tenant = null,
@@ -81,8 +94,9 @@ public sealed class KustoService(
         {
             if (string.Equals(cluster.Data.Name, clusterName, StringComparison.OrdinalIgnoreCase))
             {
-                // Serialize the cluster data to JSON
-                return JsonSerializer.SerializeToDocument(cluster.Data);
+                // Serialize the cluster data to JSON using source generation context
+                var json = System.Text.Json.JsonSerializer.SerializeToNode(cluster.Data, KustoJsonContext.Default.ClusterGetCommandResult);
+                return json!;
             }
         }
         throw new Exception($"Kusto cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
@@ -179,7 +193,7 @@ public sealed class KustoService(
         return result;
     }
 
-    public async Task<List<JsonDocument>> GetTableSchema(
+    public async Task<List<JsonNode>> GetTableSchema(
         string subscriptionId,
         string clusterName,
         string databaseName,
@@ -192,7 +206,7 @@ public sealed class KustoService(
         return await GetTableSchema(clusterUri, databaseName, tableName, tenant, authMethod, retryPolicy);
     }
 
-    public async Task<List<JsonDocument>> GetTableSchema(
+    public async Task<List<JsonNode>> GetTableSchema(
         string clusterUri,
         string databaseName,
         string tableName,
@@ -208,18 +222,18 @@ public sealed class KustoService(
             databaseName,
             $".show table {tableName} cslschema",
             clientRequestProperties);
-        var result = new List<JsonDocument>();
+        var result = new List<JsonNode>();
         while (reader.Read())
         {
             var jsonString = reader["Schema"].ToString()!;
-            var json = JsonDocument.Parse(jsonString);
-            result.Add(json);
-
+            var json = JsonNode.Parse(jsonString);
+            if (json != null)
+                result.Add(json);
         }
         return result;
     }
 
-    public async Task<List<JsonDocument>> QueryItems(
+    public async Task<List<JsonNode>> QueryItems(
         string subscriptionId,
         string clusterName,
         string databaseName,
@@ -235,25 +249,7 @@ public sealed class KustoService(
         return await QueryItems(clusterUri, databaseName, query, tenant, authMethod, retryPolicy);
     }
 
-    private async Task<string> GetClusterUri(string subscriptionId, string clusterName, string? tenant, RetryPolicyArguments? retryPolicy)
-    {
-        var cluster = await GetCluster(subscriptionId, clusterName, tenant, retryPolicy) ?? throw new Exception($"Kusto cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
-
-        if (!cluster.RootElement.TryGetProperty("ClusterUri", out var clusterUriElement))
-        {
-            throw new Exception($"Could not retrieve URI for cluster '{clusterName}'");
-        }
-
-        var clusterUri = clusterUriElement.GetString();
-        if (string.IsNullOrEmpty(clusterUri))
-        {
-            throw new Exception($"Could not retrieve URI for cluster '{clusterName}'");
-        }
-
-        return clusterUri!;
-    }
-
-    public async Task<List<JsonDocument>> QueryItems(
+    public async Task<List<JsonNode>> QueryItems(
         string clusterUri,
         string databaseName,
         string query, string? tenant = null,
@@ -271,7 +267,7 @@ public sealed class KustoService(
         using var cslAdminProvider = KustoClientFactory.CreateCslQueryProvider(kcsb);
         var clientRequestProperties = CreateClientRequestProperties();
         var reader = await cslAdminProvider.ExecuteQueryAsync(databaseName, query, clientRequestProperties);
-        var results = new List<JsonDocument>();
+        var results = new List<JsonNode>();
 
         try
         {
@@ -282,8 +278,9 @@ public sealed class KustoService(
                 {
                     dict[reader.GetName(i)] = reader.GetValue(i);
                 }
-                var json = JsonSerializer.SerializeToDocument(dict);
-                results.Add(json);
+                var json = System.Text.Json.JsonSerializer.SerializeToNode(dict, KustoJsonContext.Default.QueryCommandResult);
+                if (json != null)
+                    results.Add(json);
             }
         }
         catch (Exception ex)

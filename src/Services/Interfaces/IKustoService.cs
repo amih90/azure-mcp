@@ -1,6 +1,6 @@
 using AzureMcp.Arguments;
 using AzureMcp.Models;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace AzureMcp.Services.Interfaces;
 
@@ -11,7 +11,7 @@ public interface IKustoService
         string? tenant = null,
         RetryPolicyArguments? retryPolicy = null);
 
-    Task<JsonDocument> GetCluster(
+    Task<JsonNode> GetCluster(
         string subscriptionId,
         string clusterName,
         string? tenant = null,
@@ -30,7 +30,7 @@ public interface IKustoService
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null);
 
-    Task<List<JsonDocument>> QueryItems(
+    Task<List<JsonNode>> QueryItems(
         string clusterUri,
         string databaseName,
         string query,
@@ -38,7 +38,7 @@ public interface IKustoService
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null);
 
-    Task<List<JsonDocument>> QueryItems(
+    Task<List<JsonNode>> QueryItems(
         string subscriptionId,
         string clusterName,
         string databaseName,
@@ -62,7 +62,7 @@ public interface IKustoService
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null);
 
-    Task<List<JsonDocument>> GetTableSchema(
+    Task<List<JsonNode>> GetTableSchema(
         string clusterUri,
         string databaseName,
         string tableName,
@@ -70,7 +70,7 @@ public interface IKustoService
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null);
 
-    Task<List<JsonDocument>> GetTableSchema(
+    Task<List<JsonNode>> GetTableSchema(
         string subscriptionId,
         string clusterName,
         string databaseName,

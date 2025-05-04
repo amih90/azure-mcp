@@ -11,6 +11,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System.CommandLine.Parsing;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Xunit;
 
@@ -34,10 +35,10 @@ public sealed class ClusterGetCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsCluster_WhenClusterExists()
     {
-        var expectedCluster = JsonDocument.Parse("{\"name\":\"clusterA\"}");
+        var expectedCluster = JsonNode.Parse("{\"name\":\"clusterA\"}");
         _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
-            .Returns((Task<JsonDocument>)(object)Task.FromResult<JsonDocument?>(expectedCluster));
+            .Returns((Task<JsonNode>)(object)Task.FromResult<JsonNode?>(expectedCluster));
         var command = new ClusterGetCommand(_logger);
         var parser = new Parser(command.GetCommand());
         var args = parser.Parse("--subscription sub123 --cluster-name clusterA");
@@ -51,7 +52,7 @@ public sealed class ClusterGetCommandTests
         var result = JsonSerializer.Deserialize<ClusterGetResult>(json);
         Assert.NotNull(result);
         Assert.NotNull(result.Cluster);
-        Assert.Equal("clusterA", result.Cluster.RootElement.GetProperty("name").GetString());
+        Assert.Equal("clusterA", result.Cluster?["name"]?.ToString());
     }
 
     [Fact]
@@ -59,7 +60,7 @@ public sealed class ClusterGetCommandTests
     {
         _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
-            .Returns((Task<JsonDocument>)(object)Task.FromResult<JsonDocument?>(null));
+            .Returns((Task<JsonNode>)(object)Task.FromResult<JsonNode?>(null));
         var command = new ClusterGetCommand(_logger);
         var parser = new Parser(command.GetCommand());
         var args = parser.Parse("--subscription sub123 --cluster-name clusterA");
@@ -93,6 +94,6 @@ public sealed class ClusterGetCommandTests
     private sealed class ClusterGetResult
     {
         [JsonPropertyName("cluster")]
-        public JsonDocument? Cluster { get; set; }
+        public JsonNode? Cluster { get; set; }
     }
 }

@@ -13,6 +13,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System.CommandLine.Parsing;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Xunit;
 
@@ -44,7 +45,7 @@ public sealed class QueryCommandTests
     public async Task ExecuteAsync_ReturnsQueryResults(string cliArgs, bool useClusterUri)
     {
         // Arrange
-        var expectedJson = JsonDocument.Parse("[{\"foo\":42}]");
+        var expectedJson = JsonNode.Parse("[{\"foo\":42}]")!.AsArray();
         if (useClusterUri)
         {
             _kusto.QueryItems(
@@ -52,14 +53,14 @@ public sealed class QueryCommandTests
                 "db1",
                 "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<JsonDocument> { expectedJson });
+                .Returns(expectedJson.Cast<JsonNode>().ToList());
         }
         else
         {
             _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<JsonDocument> { expectedJson });
+                .Returns(expectedJson.Cast<JsonNode>().ToList());
         }
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -73,11 +74,12 @@ public sealed class QueryCommandTests
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
         var json = JsonSerializer.Serialize(response.Results);
-        var results = JsonSerializer.Deserialize<List<JsonDocument>>(json);
-        Assert.NotNull(results);
-        Assert.Equal(1, results?.Count);
-        var actualJson = results?[0].RootElement.GetRawText();
-        var expectedJsonText = expectedJson.RootElement.GetRawText();
+        var result = JsonSerializer.Deserialize<QueryResult>(json);
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        Assert.Single(result.Results);
+        var actualJson = result.Results[0]?.ToJsonString();
+        var expectedJsonText = expectedJson[0]?.ToJsonString();
         Assert.Equal(expectedJsonText, actualJson);
     }
 
@@ -92,14 +94,14 @@ public sealed class QueryCommandTests
                 "db1",
                 "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<JsonDocument>());
+                .Returns(new List<JsonNode>());
         }
         else
         {
             _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<JsonDocument>());
+                .Returns(new List<JsonNode>());
         }
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -124,14 +126,14 @@ public sealed class QueryCommandTests
                 "db1",
                 "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<JsonDocument>>(new Exception("Test error")));
+                .Returns(Task.FromException<List<JsonNode>>(new Exception("Test error")));
         }
         else
         {
             _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<JsonDocument>>(new Exception("Test error")));
+                .Returns(Task.FromException<List<JsonNode>>(new Exception("Test error")));
         }
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -158,5 +160,11 @@ public sealed class QueryCommandTests
         Assert.NotNull(response);
         Assert.Equal(400, response.Status);
         Assert.Contains("Missing required", response.Message, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed class QueryResult
+    {
+        [JsonPropertyName("results")]
+        public List<JsonNode> Results { get; set; } = new();
     }
 }

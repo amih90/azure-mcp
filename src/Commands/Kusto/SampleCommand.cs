@@ -7,7 +7,7 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace AzureMcp.Commands.Kusto;
 
@@ -34,7 +34,7 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCom
                 return context.Response;
 
             var kusto = context.GetService<IKustoService>();
-            List<JsonDocument> results;
+            List<JsonNode> results;
             var query = $"{args.Table} | sample {args.Limit}";
 
             if (UseClusterUri(args))
@@ -59,7 +59,9 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCom
                     args.RetryPolicy);
             }
 
-            context.Response.Results = results?.Count > 0 ? results : null;
+            context.Response.Results = results?.Count > 0 ?
+                ResponseResult.Create(new SampleCommandResult(results), KustoJsonContext.Default.SampleCommandResult) :
+                null;
         }
         catch (Exception ex)
         {
@@ -68,4 +70,6 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCom
         }
         return context.Response;
     }
+
+    internal record SampleCommandResult(List<JsonNode> Results);
 }

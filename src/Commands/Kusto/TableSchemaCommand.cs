@@ -8,7 +8,7 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace AzureMcp.Commands.Kusto;
 
@@ -31,7 +31,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
                 return context.Response;
 
             var kusto = context.GetService<IKustoService>();
-            List<JsonDocument> tableSchema;
+            List<JsonNode> tableSchema;
 
             if (UseClusterUri(args))
             {
@@ -55,7 +55,9 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
                     args.RetryPolicy);
             }
 
-            context.Response.Results = tableSchema?.Count > 0 ? new { tableSchema } : null;
+            context.Response.Results = tableSchema?.Count > 0 ?
+                ResponseResult.Create(new TableSchemaCommandResult(tableSchema), KustoJsonContext.Default.TableSchemaCommandResult) :
+                null;
         }
         catch (Exception ex)
         {
@@ -64,4 +66,6 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
         }
         return context.Response;
     }
+
+    internal record TableSchemaCommandResult(List<JsonNode> Schema);
 }

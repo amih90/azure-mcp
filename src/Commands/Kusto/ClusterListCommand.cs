@@ -23,8 +23,8 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
 
     protected override string GetCommandDescription() =>
         """
-        List all Kusto clusters in a subscription. This command retrieves all clusters 
-        available in the specified subscription. Requires `cluster-name` and `subscription`. 
+        List all Kusto clusters in a subscription. This command retrieves all clusters
+        available in the specified subscription. Requires `cluster-name` and `subscription`.
         Result is a list of cluster names as a JSON array.
         """;
 
@@ -44,8 +44,8 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
                 args.RetryPolicy);
 
             context.Response.Results = clusterNames?.Count > 0 ?
-            new { clusterNames } :
-            null;
+                ResponseResult.Create(new ClusterListCommandResult(clusterNames), KustoJsonContext.Default.ClusterListCommandResult) :
+                null;
         }
         catch (Exception ex)
         {
@@ -54,4 +54,6 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
         }
         return context.Response;
     }
+
+    internal record ClusterListCommandResult(List<string> Clusters);
 }

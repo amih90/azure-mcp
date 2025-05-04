@@ -59,7 +59,9 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
                     args.RetryPolicy);
             }
 
-            context.Response.Results = databasesNames?.Count > 0 ? new { databasesNames } : null;
+            context.Response.Results = databasesNames?.Count > 0 ?
+                ResponseResult.Create(new DatabaseListCommandResult(databasesNames), KustoJsonContext.Default.DatabaseListCommandResult) :
+                null;
         }
         catch (Exception ex)
         {
@@ -68,4 +70,6 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
         }
         return context.Response;
     }
+
+    public record DatabaseListCommandResult(List<string> Databases);
 }
