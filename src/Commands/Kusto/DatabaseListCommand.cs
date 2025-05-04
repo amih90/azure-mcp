@@ -24,7 +24,8 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
 
     protected override string GetCommandDescription() =>
         """
-        List all databases in a Kusto cluster. This command retrieves all databases available in the specified cluster and subscription. Results include database names and are returned as a JSON array.
+        List all databases in a Kusto cluster. This command retrieves all databases available
+         in the specified cluster and subscription. Result is a list of database names, returned as a JSON array.
         """;
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
@@ -38,11 +39,11 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
 
             var kusto = context.GetService<IKustoService>();
 
-            List<string> databases = [];
+            List<string> databasesNames = [];
 
             if (UseClusterUri(args))
             {
-                databases = await kusto.ListDatabases(
+                databasesNames = await kusto.ListDatabases(
                     args.ClusterUri!,
                     args.Tenant,
                     args.AuthMethod,
@@ -50,7 +51,7 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
             }
             else
             {
-                databases = await kusto.ListDatabases(
+                databasesNames = await kusto.ListDatabases(
                     args.Subscription!,
                     args.ClusterName!,
                     args.Tenant,
@@ -58,7 +59,7 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
                     args.RetryPolicy);
             }
 
-            context.Response.Results = databases?.Count > 0 ? new { databases } : null;
+            context.Response.Results = databasesNames?.Count > 0 ? new { databasesNames } : null;
         }
         catch (Exception ex)
         {

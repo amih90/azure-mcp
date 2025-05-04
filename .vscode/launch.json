@@ -65,7 +65,8 @@
             "stopAtEntry": false,
             "env": {
                 "DOTNET_ENVIRONMENT": "Development"
-            }
+            },
+            "justMyCode": false
         },
         {
             "name": "Debug Kusto Database List",

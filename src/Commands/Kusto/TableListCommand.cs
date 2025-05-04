@@ -17,7 +17,7 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseDat
     protected override string GetCommandName() => "list";
 
     protected override string GetCommandDescription() =>
-        "List all tables in a specific Kusto database.";
+        "List all tables in a specific Kusto database. Returns table names as a JSON array.";
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
     public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
@@ -29,11 +29,11 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseDat
                 return context.Response;
 
             var kusto = context.GetService<IKustoService>();
-            List<string> tables = [];
+            List<string> tableNames = [];
 
             if (UseClusterUri(args))
             {
-                tables = await kusto.ListTables(
+                tableNames = await kusto.ListTables(
                     args.ClusterUri!,
                     args.Database!,
                     args.Tenant,
@@ -42,7 +42,7 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseDat
             }
             else
             {
-                tables = await kusto.ListTables(
+                tableNames = await kusto.ListTables(
                     args.Subscription!,
                     args.ClusterName!,
                     args.Database!,
@@ -51,7 +51,7 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseDat
                     args.RetryPolicy);
             }
 
-            context.Response.Results = tables?.Count > 0 ? new { tables } : null;
+            context.Response.Results = tableNames?.Count > 0 ? new { tableNames } : null;
         }
         catch (Exception ex)
         {

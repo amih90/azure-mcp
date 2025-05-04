@@ -181,7 +181,7 @@ public sealed class KustoService(ISubscriptionService subscriptionService, ICach
         ValidateRequiredParameters(clusterUri, databaseName, tableName);
         var kcsb = await CreateKustoConnectionStringBuilder(clusterUri, authMethod, null, tenant);
         using var queryProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
-        var command = $".show table {tableName} schema as json";
+        var command = $".show table {tableName} cslschema";
         var reader = await queryProvider.ExecuteControlCommandAsync(databaseName, command, null);
         var result = new List<JsonDocument>();
         while (reader.Read())
@@ -277,7 +277,7 @@ public sealed class KustoService(ISubscriptionService subscriptionService, ICach
         switch (authMethod)
         {
             case AuthMethod.Key:
-                throw new NotSupportedException("Kusto data plane does not support key-based authentication via ARM. Use AAD credential or connection string.");
+                throw new NotSupportedException("Not Supported. Supported Types are: AAD credential or connection string.");
             case AuthMethod.ConnectionString:
                 if (string.IsNullOrEmpty(connectionString))
                     throw new ArgumentNullException(nameof(connectionString));

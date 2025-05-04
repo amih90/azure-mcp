@@ -24,7 +24,8 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
     protected override string GetCommandDescription() =>
         """
         List all Kusto clusters in a subscription. This command retrieves all clusters 
-        available in the specified subscription. Results include cluster names and are returned as a JSON array.
+        available in the specified subscription. Requires `cluster-name` and `subscription`. 
+        Result is a list of cluster names as a JSON array.
         """;
 
     [McpServerTool(Destructive = true, ReadOnly = false)]
@@ -37,13 +38,13 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
                 return context.Response;
 
             var kusto = context.GetService<IKustoService>();
-            var clusters = await kusto.ListClusters(
+            var clusterNames = await kusto.ListClusters(
                 args.Subscription!,
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = clusters?.Count > 0 ?
-            new { clusters } :
+            context.Response.Results = clusterNames?.Count > 0 ?
+            new { clusterNames } :
             null;
         }
         catch (Exception ex)

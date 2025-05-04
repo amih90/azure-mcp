@@ -31,11 +31,11 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
                 return context.Response;
 
             var kusto = context.GetService<IKustoService>();
-            List<JsonDocument> schema;
+            List<JsonDocument> tableSchema;
 
             if (UseClusterUri(args))
             {
-                schema = await kusto.GetTableSchema(
+                tableSchema = await kusto.GetTableSchema(
                     args.ClusterUri!,
                     args.Database!,
                     args.Table!,
@@ -45,7 +45,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
             }
             else
             {
-                schema = await kusto.GetTableSchema(
+                tableSchema = await kusto.GetTableSchema(
                     args.Subscription!,
                     args.ClusterName!,
                     args.Database!,
@@ -55,7 +55,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
                     args.RetryPolicy);
             }
 
-            context.Response.Results = schema?.Count > 0 ? new { schema } : null;
+            context.Response.Results = tableSchema?.Count > 0 ? new { tableSchema } : null;
         }
         catch (Exception ex)
         {
