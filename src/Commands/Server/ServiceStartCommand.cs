@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Reflection;
 using AzureMcp.Arguments.Server;
 using AzureMcp.Extensions;
 using AzureMcp.Models;
@@ -18,9 +21,6 @@ using ModelContextProtocol.Server;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Reflection;
 
 namespace AzureMcp.Commands.Server;
 

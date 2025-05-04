@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
 using AzureMcp.Arguments.Monitor;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.Monitor.Table;
 
@@ -61,7 +61,7 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseMon
                 args.RetryPolicy);
 
             context.Response.Results = tables?.Count > 0 ?
-                new { tables } :
+                ResponseResult.Create(new TableListCommandResult(tables), MonitorJsonContext.Default.TableListCommandResult) :
                 null;
         }
         catch (Exception ex)
@@ -90,4 +90,6 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseMon
         args.ResourceGroup = parseResult.GetValueForOption(_resourceGroupOption) ?? ArgumentDefinitions.Common.ResourceGroup.DefaultValue;
         return args;
     }
+
+    internal record TableListCommandResult(List<string> Tables);
 }

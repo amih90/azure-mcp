@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using AzureMcp.Arguments;
 using AzureMcp.Arguments.Monitor;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AzureMcp.Commands.Monitor;
 
@@ -33,7 +33,8 @@ public abstract class BaseMonitorCommand<
 
     protected async Task<List<ArgumentOption>> GetWorkspaceOptions(CommandContext context, string subscription)
     {
-        if (string.IsNullOrEmpty(subscription)) return [];
+        if (string.IsNullOrEmpty(subscription))
+            return [];
 
         var monitorService = context.GetService<IMonitorService>();
         var workspaces = await monitorService.ListWorkspaces(subscription, null);

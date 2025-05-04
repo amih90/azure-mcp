@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
 using AzureMcp.Arguments.Search.Index;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.Search.Index;
 
@@ -24,7 +24,7 @@ public sealed class IndexQueryCommand(ILogger<IndexQueryCommand> logger) : Globa
     protected override string GetCommandDescription() =>
         """
         Query an Azure AI Search index. Returns search results matching the specified query.
-        
+
         Required arguments:
         - service-name: The name of the Azure AI Search service
         - index-name: The name of the search index to query
@@ -76,7 +76,7 @@ public sealed class IndexQueryCommand(ILogger<IndexQueryCommand> logger) : Globa
                 args.Query!,
                 args.RetryPolicy);
 
-            context.Response.Results = results;
+            context.Response.Results = ResponseResult.Create(results, SearchJsonContext.Default.ListJsonElement);
         }
         catch (Exception ex)
         {

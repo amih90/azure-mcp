@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine.Parsing;
 using AzureMcp.Arguments.Search.Service;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.Search.Service;
 
@@ -43,7 +43,10 @@ public sealed class ServiceListCommand(ILogger<ServiceListCommand> logger) : Sub
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = services?.Count > 0 ? new { services } : null;
+            context.Response.Results = services?.Count > 0 ?
+                ResponseResult.Create(
+                    new ServiceListCommandResult(services),
+                    SearchJsonContext.Default.ServiceListCommandResult) : null;
         }
         catch (Exception ex)
         {
@@ -53,4 +56,7 @@ public sealed class ServiceListCommand(ILogger<ServiceListCommand> logger) : Sub
 
         return context.Response;
     }
+
+    internal sealed record ServiceListCommandResult(List<string> Services);
 }
+

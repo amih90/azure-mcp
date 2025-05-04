@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine.Parsing;
 using AzureMcp.Arguments.Subscription;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.Subscription;
 
@@ -39,7 +39,11 @@ public sealed class SubscriptionListCommand(ILogger<SubscriptionListCommand> log
             var subscriptions = await subscriptionService.GetSubscriptions(args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = subscriptions?.Count > 0 ? new { subscriptions } : null;
+            context.Response.Results = subscriptions?.Count > 0
+                ? ResponseResult.Create(
+                    new SubscriptionListCommandResult(subscriptions),
+                    SubscriptionJsonContext.Default.SubscriptionListCommandResult)
+                : null;
         }
         catch (Exception ex)
         {
@@ -49,4 +53,6 @@ public sealed class SubscriptionListCommand(ILogger<SubscriptionListCommand> log
 
         return context.Response;
     }
+
+    internal record SubscriptionListCommandResult(List<ArgumentOption> Subscriptions);
 }

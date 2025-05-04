@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.Storage.Blob;
-using AzureMcp.Models.Argument;
-using AzureMcp.Services.Interfaces;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
+using AzureMcp.Arguments.Storage.Blob;
+using AzureMcp.Models.Argument;
 
 namespace AzureMcp.Commands.Storage.Blob.Container;
 

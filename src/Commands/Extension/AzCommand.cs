@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Runtime.InteropServices;
 using AzureMcp.Arguments.Extension;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Runtime.InteropServices;
 
 namespace AzureMcp.Commands.Extension;
 
@@ -130,7 +130,8 @@ Your job is to answer questions about an Azure environment by executing Azure CL
                 context.Response.Message = result.Error;
             }
 
-            context.Response.Results = processService.ParseJsonOutput(result);
+            var jElem = processService.ParseJsonOutput(result);
+            context.Response.Results = ResponseResult.Create(jElem, JsonSourceGenerationContext.Default.JsonElement);
         }
         catch (Exception ex)
         {

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Identity.Broker;
@@ -10,8 +12,6 @@ using AzureMcp.Services.Azure.Subscription;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using System.Runtime.InteropServices;
-using System.Text.Json;
 using Xunit;
 
 namespace AzureMcp.Tests.Services.Azure.Authentication;
@@ -47,7 +47,7 @@ public class AuthenticationIntegrationTests : IAsyncLifetime
     [Trait("Category", "Live")]
     public async Task LoginWithIdentityBroker_ThenListSubscriptions_ShouldSucceed()
     {
-        Assert.SkipWhen(SkipExtensions.IsRunningFromDotnetTest(), SkipExtensions.RunningFromDotnetTestReason);
+        Assert.SkipWhen(Extensions.IsRunningFromDotnetTest(), Extensions.RunningFromDotnetTestReason);
         Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Identity broker is not supported on MacOS");
 
         _output.WriteLine("Testing InteractiveBrowserCredential with identity broker...");

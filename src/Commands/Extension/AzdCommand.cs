@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Runtime.InteropServices;
 using AzureMcp.Arguments.Extension;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
@@ -8,9 +11,6 @@ using AzureMcp.Services.Azure;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Runtime.InteropServices;
 
 namespace AzureMcp.Commands.Extension;
 
@@ -201,7 +201,7 @@ public sealed class AzdCommand(ILogger<AzdCommand> logger, int processTimeoutSec
                 break;
         }
 
-        response.Results = contentResults;
+        response.Results = ResponseResult.Create(contentResults, JsonSourceGenerationContext.Default.ListString);
 
         return response;
     }
@@ -260,7 +260,7 @@ public sealed class AzdCommand(ILogger<AzdCommand> logger, int processTimeoutSec
             );
         }
 
-        response.Results = contentResults;
+        response.Results = ResponseResult.Create(contentResults, JsonSourceGenerationContext.Default.ListString);
 
         return response;
     }

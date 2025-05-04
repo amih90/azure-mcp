@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AzureMcp.Arguments;
 using AzureMcp.Commands.Search.Index;
 using AzureMcp.Models.Command;
@@ -9,10 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Xunit;
 
 namespace AzureMcp.Tests.Commands.Search;

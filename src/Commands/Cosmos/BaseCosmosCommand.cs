@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using AzureMcp.Arguments.Cosmos;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Azure.Cosmos;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AzureMcp.Commands.Cosmos;
 
@@ -33,7 +33,8 @@ public abstract class BaseCosmosCommand<
     // Common method to get account options
     protected async Task<List<ArgumentOption>> GetAccountOptions(CommandContext context, string subscription)
     {
-        if (string.IsNullOrEmpty(subscription)) return [];
+        if (string.IsNullOrEmpty(subscription))
+            return [];
 
         var cosmosService = context.GetService<ICosmosService>();
         var accounts = await cosmosService.GetCosmosAccounts(subscription);

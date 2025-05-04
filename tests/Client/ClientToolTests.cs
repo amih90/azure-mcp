@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using AzureMcp.Tests.Client.Helpers;
 using ModelContextProtocol;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol.Types;
-using System.Text.Json;
 using Xunit;
 
 namespace AzureMcp.Tests.Client;
@@ -36,8 +36,8 @@ public class ClientToolTests(McpClientFixture fixture) : IClassFixture<McpClient
         var root = JsonSerializer.Deserialize<JsonElement>(content!);
         Assert.Equal(JsonValueKind.Object, root.ValueKind);
 
-        Assert.True(root.TryGetProperty("results", out var results));
-        Assert.True(results.TryGetProperty("subscriptions", out var subscriptionsArray));
+        var results = root.AssertProperty("results");
+        var subscriptionsArray = results.AssertProperty("subscriptions");
         Assert.Equal(JsonValueKind.Array, subscriptionsArray.ValueKind);
 
         Assert.NotEmpty(subscriptionsArray.EnumerateArray());

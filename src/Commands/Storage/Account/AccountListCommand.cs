@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine.Parsing;
 using AzureMcp.Arguments.Storage.Account;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.Storage.Account;
 
@@ -20,7 +20,7 @@ public sealed class AccountListCommand(ILogger<AccountListCommand> logger) : Sub
     protected override string GetCommandDescription() =>
         $"""
         List all Storage accounts in a subscription. This command retrieves all Storage accounts available
-        in the specified {ArgumentDefinitions.Common.SubscriptionName}. Results include account names and are 
+        in the specified {ArgumentDefinitions.Common.SubscriptionName}. Results include account names and are
         returned as a JSON array.
         """;
 
@@ -42,7 +42,9 @@ public sealed class AccountListCommand(ILogger<AccountListCommand> logger) : Sub
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = accounts?.Count > 0 ? new { accounts } : null;
+            context.Response.Results = accounts?.Count > 0
+                ? ResponseResult.Create(new Result(accounts), StorageJsonContext.Default.AccountListCommandResult)
+                : null;
         }
         catch (Exception ex)
         {
@@ -52,4 +54,6 @@ public sealed class AccountListCommand(ILogger<AccountListCommand> logger) : Sub
 
         return context.Response;
     }
+
+    internal record Result(List<string> Accounts);
 }

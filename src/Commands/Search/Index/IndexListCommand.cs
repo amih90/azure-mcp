@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
 using AzureMcp.Arguments.Search.Index;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.Search.Index;
 
@@ -63,7 +63,11 @@ public sealed class IndexListCommand(ILogger<IndexListCommand> logger) : GlobalC
                 args.Service!,
                 args.RetryPolicy);
 
-            context.Response.Results = indexes?.Count > 0 ? new { indexes } : null;
+            context.Response.Results = indexes?.Count > 0
+                ? ResponseResult.Create(
+                    new IndexListCommandResult(indexes),
+                    SearchJsonContext.Default.IndexListCommandResult)
+                : null;
         }
         catch (Exception ex)
         {
@@ -73,6 +77,8 @@ public sealed class IndexListCommand(ILogger<IndexListCommand> logger) : GlobalC
 
         return context.Response;
     }
+
+    internal record IndexListCommandResult(List<string> Indexes);
 
     private static ArgumentBuilder<IndexListArguments> CreateIndexListArgument() =>
         ArgumentBuilder<IndexListArguments>

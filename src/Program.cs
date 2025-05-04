@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.Text.Json;
 using AzureMcp.Commands;
 using AzureMcp.Extensions;
+using AzureMcp.Models;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Azure.AppConfig;
 using AzureMcp.Services.Azure.Cosmos;
@@ -18,8 +21,6 @@ using AzureMcp.Services.Interfaces;
 using AzureMcp.Services.ProcessExecution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.CommandLine;
-using System.Text.Json;
 
 try
 {
@@ -41,7 +42,7 @@ catch (Exception ex)
         Duration = 0
     };
 
-    Console.WriteLine(JsonSerializer.Serialize(response));
+    Console.WriteLine(JsonSerializer.Serialize(response, ModelsJsonContext.Default.CommandResponse));
     return 1;
 }
 

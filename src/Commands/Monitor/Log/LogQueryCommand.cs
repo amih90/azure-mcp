@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
 using AzureMcp.Arguments.Monitor;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 
 namespace AzureMcp.Commands.Monitor.Log;
 
@@ -24,9 +24,9 @@ public sealed class LogQueryCommand(ILogger<LogQueryCommand> logger) : BaseMonit
 
     protected override string GetCommandDescription() =>
         $"""
-        Execute a KQL query against a Log Analytics workspace. Requires {ArgumentDefinitions.Monitor.WorkspaceIdOrName} 
-        and resource group. Optional {ArgumentDefinitions.Monitor.HoursName} 
-        (default: {ArgumentDefinitions.Monitor.Hours.DefaultValue}) and {ArgumentDefinitions.Monitor.LimitName} 
+        Execute a KQL query against a Log Analytics workspace. Requires {ArgumentDefinitions.Monitor.WorkspaceIdOrName}
+        and resource group. Optional {ArgumentDefinitions.Monitor.HoursName}
+        (default: {ArgumentDefinitions.Monitor.Hours.DefaultValue}) and {ArgumentDefinitions.Monitor.LimitName}
         (default: {ArgumentDefinitions.Monitor.Limit.DefaultValue}) parameters.
         The {ArgumentDefinitions.Monitor.QueryTextName} parameter accepts KQL syntax.
         """;
@@ -74,7 +74,7 @@ public sealed class LogQueryCommand(ILogger<LogQueryCommand> logger) : BaseMonit
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = results;
+            context.Response.Results = ResponseResult.Create(results, JsonSourceGenerationContext.Default.ListJsonNode);
         }
         catch (Exception ex)
         {

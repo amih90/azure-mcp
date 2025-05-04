@@ -1,7 +1,7 @@
 # Contributing to Azure MCP
 
 There are many ways to contribute to the Azure MCP project: reporting bugs, submitting pull requests, and creating suggestions.
-After cloning and building the repo, check out the [github project](https://github.com/orgs/Azure/projects/812/views/13) and [issues list](https://github.com/Azure/azure-mcp/issues).  Issues labeled [help wanted](https://github.com/Azure/azure-mcp/labels/help%20wanted) are good issues to submit a PR for.  Issues labeled [good first issue](https://github.com/Azure/azure-mcp/labels/good%20first%20issue) are great candidates to pick up if you are in the code for the first time.  
+After cloning and building the repo, check out the [github project](https://github.com/orgs/Azure/projects/812/views/13) and [issues list](https://github.com/Azure/azure-mcp/issues).  Issues labeled [help wanted](https://github.com/Azure/azure-mcp/labels/help%20wanted) are good issues to submit a PR for.  Issues labeled [good first issue](https://github.com/Azure/azure-mcp/labels/good%20first%20issue) are great candidates to pick up if you are in the code for the first time.
 >[!IMPORTANT]
 If you are contributing significant changes, or if the issue is already assigned to a specific milestone, please discuss with the assignee of the issue first before starting to work on the issue.
 
@@ -28,7 +28,7 @@ The project is organized as follows:
 1. Create a new issue in this repository with:
    - Title: "Add command: azmcp [service] [resource] [operation]"
    - Description: Detailed explanation of what the command will do
-   
+
 2. Set up your development environment:
    - Open VS Code Insiders
    - Open the Copilot Chat view
@@ -71,13 +71,33 @@ Test requirements:
 - Mock external service calls
 - Test argument validation
 
+### Live Tests
+
+Before running live tests, install Azure Powershell, login, then run:
+```pwsh
+./eng/common/TestResources/New-TestResources.ps1 `
+  -SubscriptionId YourSubscriptionId `
+  -ResourceGroupName YourResourceGroupName `
+  -Verbose `
+  -Force
+```
+
+Omitting the `-ResourceGroupName` parameter will default the name to a hash of your username. Omitting the `-SubscriptionId` parameter will deploy to your default subscription. Internal users omitting the `-SubscriptionId` parameter will deploy to the playground subscription.
+
+After deploying test resources, you should have a `.testsettings.json` file with your deployment information in the root of the repo.  You can run live tests with:
+```pwsh
+./eng/scripts/Test-Code.ps1 -Live
+```
+
 ## Installing Git Hooks
 
 To ensure consistent code quality, the pre-commit hook is automatically installed before every build. This hook will ensure that your code adheres to the required standards.
 
 ### Automatic Setup
 
-The pre-commit hook is installed automatically when you build the project. You do not need to run any additional commands. The hook is located in the `Scripts/git-hooks/` directory and is copied to the `.git/hooks/` folder during the build process.
+The pre-push hook is installed automatically when you build the project. You do not need to run any additional commands. The hook is located in the `eng/scripts/git-hooks/` directory and is copied to the `.git/hooks/` folder during the build process.
+
+Powershell is required for hook installation. For installation instructions, see [Installing PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell).
 
 ## Code Style
 

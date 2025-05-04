@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Identity.Broker;
 using AzureMcp.Helpers;
-using System.Text;
 
 namespace AzureMcp.Services.Azure.Authentication;
 

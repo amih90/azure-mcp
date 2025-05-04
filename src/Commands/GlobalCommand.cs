@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Azure;
 using Azure.Core;
 using Azure.Identity;
@@ -9,9 +12,6 @@ using AzureMcp.Models;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
@@ -140,7 +140,8 @@ public abstract class GlobalCommand<
 
     protected async Task<List<ArgumentOption>> GetResourceGroupOptions(CommandContext context, string subscription, string tenant = "")
     {
-        if (string.IsNullOrEmpty(subscription)) return [];
+        if (string.IsNullOrEmpty(subscription))
+            return [];
 
         var resourceGroupService = context.GetService<IResourceGroupService>();
         var resourceGroup = await resourceGroupService.GetResourceGroups(subscription, tenant);

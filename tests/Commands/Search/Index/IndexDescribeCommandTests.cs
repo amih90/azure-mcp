@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AzureMcp.Arguments;
 using AzureMcp.Commands.Search.Index;
 using AzureMcp.Models.Command;
@@ -9,11 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Xunit;
+using static AzureMcp.Commands.Search.Index.IndexDescribeCommand;
 
 namespace AzureMcp.Tests.Commands.Search;
 
@@ -61,7 +62,11 @@ public class IndexDescribeCommandTests
         Assert.Equal(200, response.Status);
 
         var json = JsonSerializer.Serialize(response.Results);
-        var result = JsonSerializer.Deserialize<IndexDescribeResult>(json);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var result = JsonSerializer.Deserialize<IndexDescribeCommandResult>(json, options);
 
         Assert.NotNull(result);
         Assert.NotNull(result?.Index);
@@ -81,7 +86,7 @@ public class IndexDescribeCommandTests
                 Arg.Is<string>(s => s == serviceName),
                 Arg.Is<string>(i => i == indexName),
                 Arg.Any<RetryPolicyArguments?>())
-            .Returns((object)null!);
+            .Returns(Task.FromResult((SearchIndexProxy?)null));
 
         var command = new IndexDescribeCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -165,15 +170,15 @@ public class IndexDescribeCommandTests
         Assert.NotNull(indexOption);
     }
 
-    private static MockIndexDefinition CreateMockIndexDefinition()
+    private static SearchIndexProxy CreateMockIndexDefinition()
     {
-        return new MockIndexDefinition
+        return new()
         {
             Name = "sampleIndex",
             Fields = [
-                new MockField { Name = "id", Type = "Edm.String", Key = true },
-                new MockField { Name = "title", Type = "Edm.String", Searchable = true },
-                new MockField { Name = "content", Type = "Edm.String", Searchable = true, Filterable = true }
+                new() { Name = "id", Type = "Edm.String", Key = true },
+                new() { Name = "title", Type = "Edm.String", Searchable = true },
+                new() { Name = "content", Type = "Edm.String", Searchable = true, Filterable = true }
             ]
         };
     }
