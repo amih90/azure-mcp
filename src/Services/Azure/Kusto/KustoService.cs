@@ -3,17 +3,31 @@ using AzureMcp.Arguments;
 using AzureMcp.Models;
 using AzureMcp.Services.Interfaces;
 using Kusto.Data;
+using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
+using Microsoft.Extensions.Options;
+using ModelContextProtocol.Server;
 using System.Text.Json;
 
 namespace AzureMcp.Services.Azure.Kusto;
 
-public sealed class KustoService(ISubscriptionService subscriptionService, ICacheService cacheService) : BaseAzureService, IKustoService
+public sealed class KustoService(
+    ISubscriptionService subscriptionService,
+    ICacheService cacheService) : BaseAzureService, IKustoService
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
     private readonly ICacheService _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
     private const string KUSTO_CLUSTERS_CACHE_KEY = "kusto_clusters";
     private static readonly TimeSpan CACHE_DURATION = TimeSpan.FromHours(1);
+
+    private ClientRequestProperties CreateClientRequestProperties()
+    {
+        return new ClientRequestProperties
+        {
+            ClientRequestId = $"AzMcp;{Guid.NewGuid()}",
+            Application = "AzureMCP"
+        };
+    }
 
     public async Task<List<string>> ListClusters(
         string subscriptionId,
@@ -105,8 +119,12 @@ public sealed class KustoService(ISubscriptionService subscriptionService, ICach
             null,
             tenant);
 
-        using var queryProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
-        var reader = await queryProvider.ExecuteControlCommandAsync(clusterName, ".show databases", null);
+        using var cslAdminProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
+        var clientRequestProperties = CreateClientRequestProperties();
+        var reader = await cslAdminProvider.ExecuteControlCommandAsync(
+            clusterName,
+            ".show databases",
+            clientRequestProperties);
         var result = new List<string>();
         while (reader.Read())
         {
@@ -147,8 +165,12 @@ public sealed class KustoService(ISubscriptionService subscriptionService, ICach
             null,
             tenant);
 
-        using var queryProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
-        var reader = await queryProvider.ExecuteControlCommandAsync(databaseName, ".show tables", null);
+        using var cslAdminProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
+        var clientRequestProperties = CreateClientRequestProperties();
+        var reader = await cslAdminProvider.ExecuteControlCommandAsync(
+            databaseName,
+            ".show tables",
+            clientRequestProperties);
         var result = new List<string>();
         while (reader.Read())
         {
@@ -180,9 +202,12 @@ public sealed class KustoService(ISubscriptionService subscriptionService, ICach
     {
         ValidateRequiredParameters(clusterUri, databaseName, tableName);
         var kcsb = await CreateKustoConnectionStringBuilder(clusterUri, authMethod, null, tenant);
-        using var queryProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
-        var command = $".show table {tableName} cslschema";
-        var reader = await queryProvider.ExecuteControlCommandAsync(databaseName, command, null);
+        using var cslAdminProvider = KustoClientFactory.CreateCslAdminProvider(kcsb);
+        var clientRequestProperties = CreateClientRequestProperties();
+        var reader = await cslAdminProvider.ExecuteControlCommandAsync(
+            databaseName,
+            $".show table {tableName} cslschema",
+            clientRequestProperties);
         var result = new List<JsonDocument>();
         while (reader.Read())
         {
@@ -243,8 +268,9 @@ public sealed class KustoService(ISubscriptionService subscriptionService, ICach
             null,
             tenant);
 
-        using var queryProvider = KustoClientFactory.CreateCslQueryProvider(kcsb);
-        var reader = await queryProvider.ExecuteQueryAsync(databaseName, query, null);
+        using var cslAdminProvider = KustoClientFactory.CreateCslQueryProvider(kcsb);
+        var clientRequestProperties = CreateClientRequestProperties();
+        var reader = await cslAdminProvider.ExecuteQueryAsync(databaseName, query, clientRequestProperties);
         var results = new List<JsonDocument>();
 
         try
