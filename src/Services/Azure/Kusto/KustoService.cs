@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Azure.ResourceManager.Kusto;
 using AzureMcp.Arguments;
 using AzureMcp.Commands.Kusto;
@@ -8,7 +9,6 @@ using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
-using System.Text.Json.Nodes;
 
 namespace AzureMcp.Services.Azure.Kusto;
 

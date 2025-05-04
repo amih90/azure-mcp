@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AzureMcp.Commands.Kusto;
 
@@ -70,7 +70,8 @@ public abstract class BaseClusterCommand<
     // Common method to get cluster options
     protected async Task<List<ArgumentOption>> GetClusterOptions(CommandContext context, string subscription)
     {
-        if (string.IsNullOrEmpty(subscription)) return [];
+        if (string.IsNullOrEmpty(subscription))
+            return [];
 
         var kusto = context.GetService<IKustoService>();
         var clusters = await kusto.ListClusters(subscription);

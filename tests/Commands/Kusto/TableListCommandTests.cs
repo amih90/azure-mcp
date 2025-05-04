@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine.Parsing;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AzureMcp.Arguments;
 using AzureMcp.Arguments.Kusto;
 using AzureMcp.Commands.Kusto;
@@ -10,9 +13,6 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using System.CommandLine.Parsing;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Xunit;
 using static AzureMcp.Commands.Kusto.TableListCommand;
 
@@ -65,13 +65,13 @@ public sealed class TableListCommandTests
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);
-        
+
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
 
         var json = JsonSerializer.Serialize(response.Results);
         var result = JsonSerializer.Deserialize<TablesListResult>(json);
-                
+
         Assert.NotNull(result);
         Assert.Equal(2, result?.Tables?.Count);
     }

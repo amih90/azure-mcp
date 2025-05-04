@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine.Parsing;
+using System.Text.Json.Nodes;
 using AzureMcp.Arguments; // For RetryPolicyArguments
 using AzureMcp.Commands.Kusto;
 using AzureMcp.Models; // For AuthMethod
@@ -9,8 +11,6 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using System.CommandLine.Parsing;
-using System.Text.Json.Nodes;
 using Xunit;
 
 namespace AzureMcp.Tests.Commands.Kusto;

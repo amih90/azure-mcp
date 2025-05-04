@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.CommandLine.Parsing;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using AzureMcp.Arguments;
 using AzureMcp.Arguments.Kusto;
 using AzureMcp.Commands.Kusto;
@@ -10,10 +14,6 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using System.CommandLine.Parsing;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using Xunit;
 
 namespace AzureMcp.Tests.Commands.Kusto;
