@@ -1,30 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments.Kusto;
+using AzureMcp.Models;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
-using System.Text.Json;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
-public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
+public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArguments>
 {
-    private readonly ILogger<QueryCommand> _logger;
+    private readonly ILogger<DatabaseListCommand> _logger;
 
-    public QueryCommand(ILogger<QueryCommand> logger) : base()
+    public DatabaseListCommand(ILogger<DatabaseListCommand> logger) : base()
     {
         _logger = logger;
     }
 
-    protected override string GetCommandName() => "query";
+    protected override string GetCommandName() => "list";
 
     protected override string GetCommandDescription() =>
         """
-        Execute a KQL against items in a Data Explorer cluster. Requires cluster-uri, database, and query. Results are returned as a JSON array of documents.
+        List all databases in a Kusto cluster. This command retrieves all databases available in the specified cluster and subscription. Results include database names and are returned as a JSON array.
         """;
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
@@ -36,37 +36,33 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            List<JsonDocument> results = [];
-            var dataExplorerService = context.GetService<IDataExplorerService>();
+            var kusto = context.GetService<IKustoService>();
+
+            List<string> databases = [];
 
             if (UseClusterUri(args))
             {
-                results = await dataExplorerService.QueryItems(
+                databases = await kusto.ListDatabases(
                     args.ClusterUri!,
-                    args.Database!,
-                    args.Query!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
             else
             {
-                results = await dataExplorerService.QueryItems(
+                databases = await kusto.ListDatabases(
                     args.Subscription!,
                     args.ClusterName!,
-                    args.Database!,
-                    args.Query!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
 
-            context.Response.Results = results?.Count > 0 ? results : null;
+            context.Response.Results = databases?.Count > 0 ? new { databases } : null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred querying Data Explorer. ClusterName: {ClusterName}, Database: {Database},"
-            + " Query: {Query}", args.ClusterName, args.Database, args.Query);
+            _logger.LogError(ex, "An exception occurred listing databases. ClusterName: {ClusterName}.", args.ClusterName);
             HandleException(context.Response, ex);
         }
         return context.Response;

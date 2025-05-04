@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments;
-using AzureMcp.Commands.DataExplorer;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,20 +14,20 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xunit;
 
-namespace AzureMcp.Tests.Commands.DataExplorer;
+namespace AzureMcp.Tests.Commands.Kusto;
 
 public sealed class ClusterGetCommandTests
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IDataExplorerService _dataExplorerService;
+    private readonly IKustoService _kusto;
     private readonly ILogger<ClusterGetCommand> _logger;
 
     public ClusterGetCommandTests()
     {
-        _dataExplorerService = Substitute.For<IDataExplorerService>();
+        _kusto = Substitute.For<IKustoService>();
         _logger = Substitute.For<ILogger<ClusterGetCommand>>();
         var collection = new ServiceCollection();
-        collection.AddSingleton(_dataExplorerService);
+        collection.AddSingleton(_kusto);
         _serviceProvider = collection.BuildServiceProvider();
     }
 
@@ -35,7 +35,7 @@ public sealed class ClusterGetCommandTests
     public async Task ExecuteAsync_ReturnsCluster_WhenClusterExists()
     {
         var expectedCluster = JsonDocument.Parse("{\"name\":\"clusterA\"}");
-        _dataExplorerService.GetCluster(
+        _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
             .Returns((Task<JsonDocument>)(object)Task.FromResult<JsonDocument?>(expectedCluster));
         var command = new ClusterGetCommand(_logger);
@@ -57,7 +57,7 @@ public sealed class ClusterGetCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsNull_WhenClusterDoesNotExist()
     {
-        _dataExplorerService.GetCluster(
+        _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
             .Returns((Task<JsonDocument>)(object)Task.FromResult<JsonDocument?>(null));
         var command = new ClusterGetCommand(_logger);
@@ -75,7 +75,7 @@ public sealed class ClusterGetCommandTests
     public async Task ExecuteAsync_HandlesException_AndSetsException()
     {
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
-        _dataExplorerService.GetCluster(
+        _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
             .ThrowsAsync(new Exception("Test error"));
         var command = new ClusterGetCommand(_logger);

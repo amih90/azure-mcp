@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace AzureMcp.Services.Interfaces;
 
-public interface IDataExplorerService
+public interface IKustoService
 {
     Task<List<string>> ListClusters(
         string subscriptionId,

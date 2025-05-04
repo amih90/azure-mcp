@@ -4,10 +4,10 @@
 using AzureMcp.Models.Argument;
 using System.Text.Json.Serialization;
 
-namespace AzureMcp.Arguments.DataExplorer;
+namespace AzureMcp.Arguments.Kusto;
 
 public class QueryArguments : BaseDatabaseArguments
 {
-    [JsonPropertyName(ArgumentDefinitions.DataExplorer.QueryText)]
+    [JsonPropertyName(ArgumentDefinitions.Kusto.QueryText)]
     public string? Query { get; set; }
 }

@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
 public abstract class BaseClusterCommand<TArgs> : SubscriptionCommand<TArgs> where TArgs : BaseClusterArguments, new()
 {
-    protected readonly Option<string> _clusterNameOption = ArgumentDefinitions.DataExplorer.Cluster.ToOption();
-    protected readonly Option<string> _clusterUriOption = ArgumentDefinitions.DataExplorer.ClusterUri.ToOption();
+    protected readonly Option<string> _clusterNameOption = ArgumentDefinitions.Kusto.Cluster.ToOption();
+    protected readonly Option<string> _clusterUriOption = ArgumentDefinitions.Kusto.ClusterUri.ToOption();
 
     protected override void RegisterOptions(Command command)
     {
@@ -69,21 +69,21 @@ public abstract class BaseClusterCommand<TArgs> : SubscriptionCommand<TArgs> whe
     {
         if (string.IsNullOrEmpty(subscription)) return [];
 
-        var dataExplorerService = context.GetService<IDataExplorerService>();
-        var clusters = await dataExplorerService.ListClusters(subscription);
+        var kusto = context.GetService<IKustoService>();
+        var clusters = await kusto.ListClusters(subscription);
 
         return clusters?.Select(a => new ArgumentOption { Name = a, Id = a }).ToList() ?? [];
     }
 
     protected ArgumentBuilder<TArgs> CreateClusterUriArgument() =>
         ArgumentBuilder<TArgs>
-            .Create(ArgumentDefinitions.DataExplorer.ClusterUri.Name, ArgumentDefinitions.DataExplorer.ClusterUri.Description)
+            .Create(ArgumentDefinitions.Kusto.ClusterUri.Name, ArgumentDefinitions.Kusto.ClusterUri.Description)
             .WithValueAccessor(args => args.ClusterUri ?? string.Empty)
-            .WithIsRequired(ArgumentDefinitions.DataExplorer.ClusterUri.Required);
+            .WithIsRequired(ArgumentDefinitions.Kusto.ClusterUri.Required);
 
     protected ArgumentBuilder<TArgs> CreateClusterNameArgument() =>
         ArgumentBuilder<TArgs>
-            .Create(ArgumentDefinitions.DataExplorer.Cluster.Name, ArgumentDefinitions.DataExplorer.Cluster.Description)
+            .Create(ArgumentDefinitions.Kusto.Cluster.Name, ArgumentDefinitions.Kusto.Cluster.Description)
             .WithValueAccessor(args => args.ClusterName ?? string.Empty)
-            .WithIsRequired(ArgumentDefinitions.DataExplorer.Cluster.Required);
+            .WithIsRequired(ArgumentDefinitions.Kusto.Cluster.Required);
 }

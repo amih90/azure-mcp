@@ -6,13 +6,13 @@ using Kusto.Data;
 using Kusto.Data.Net.Client;
 using System.Text.Json;
 
-namespace AzureMcp.Services.Azure.DataExplorer;
+namespace AzureMcp.Services.Azure.Kusto;
 
-public sealed class DataExplorerService(ISubscriptionService subscriptionService, ICacheService cacheService) : BaseAzureService, IDataExplorerService
+public sealed class KustoService(ISubscriptionService subscriptionService, ICacheService cacheService) : BaseAzureService, IKustoService
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
     private readonly ICacheService _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
-    private const string DATA_EXPLORER_CLUSTERS_CACHE_KEY = "adx_clusters";
+    private const string KUSTO_CLUSTERS_CACHE_KEY = "kusto_clusters";
     private static readonly TimeSpan CACHE_DURATION = TimeSpan.FromHours(1);
 
     public async Task<List<string>> ListClusters(
@@ -24,8 +24,8 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
 
         // Create cache key
         var cacheKey = string.IsNullOrEmpty(tenant)
-            ? $"{DATA_EXPLORER_CLUSTERS_CACHE_KEY}_{subscriptionId}"
-            : $"{DATA_EXPLORER_CLUSTERS_CACHE_KEY}_{subscriptionId}_{tenant}";
+            ? $"{KUSTO_CLUSTERS_CACHE_KEY}_{subscriptionId}"
+            : $"{KUSTO_CLUSTERS_CACHE_KEY}_{subscriptionId}_{tenant}";
 
         // Try to get from cache first
         var cachedClusters = await _cacheService.GetAsync<List<string>>(cacheKey, CACHE_DURATION);
@@ -49,7 +49,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error retrieving Data Explorer clusters: {ex.Message}", ex);
+            throw new Exception($"Error retrieving Kusto clusters: {ex.Message}", ex);
         }
         return clusters;
     }
@@ -71,7 +71,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
                 return JsonSerializer.SerializeToDocument(cluster.Data);
             }
         }
-        throw new Exception($"Data Explorer cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
+        throw new Exception($"Kusto cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
     }
 
     public async Task<List<string>> ListDatabases(
@@ -212,7 +212,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
 
     private async Task<string> GetClusterUri(string subscriptionId, string clusterName, string? tenant, RetryPolicyArguments? retryPolicy)
     {
-        var cluster = await GetCluster(subscriptionId, clusterName, tenant, retryPolicy) ?? throw new Exception($"Data Explorer cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
+        var cluster = await GetCluster(subscriptionId, clusterName, tenant, retryPolicy) ?? throw new Exception($"Kusto cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
 
         if (!cluster.RootElement.TryGetProperty("ClusterUri", out var clusterUriElement))
         {
@@ -277,7 +277,7 @@ public sealed class DataExplorerService(ISubscriptionService subscriptionService
         switch (authMethod)
         {
             case AuthMethod.Key:
-                throw new NotSupportedException("Data Explorer data plane does not support key-based authentication via ARM. Use AAD credential or connection string.");
+                throw new NotSupportedException("Kusto data plane does not support key-based authentication via ARM. Use AAD credential or connection string.");
             case AuthMethod.ConnectionString:
                 if (string.IsNullOrEmpty(connectionString))
                     throw new ArgumentNullException(nameof(connectionString));

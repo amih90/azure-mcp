@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Argument;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
 public abstract class BaseDatabaseCommand<TArgs> : BaseClusterCommand<TArgs> where TArgs : BaseDatabaseArguments, new()
 {
-    protected readonly Option<string> _databaseOption = ArgumentDefinitions.DataExplorer.Database.ToOption();
+    protected readonly Option<string> _databaseOption = ArgumentDefinitions.Kusto.Database.ToOption();
 
     protected static bool UseClusterUri(BaseDatabaseArguments args) => !string.IsNullOrEmpty(args.ClusterUri);
 

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -9,16 +9,23 @@ using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
 using System.Text.Json;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
-public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCommand<SampleArguments>
+public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
 {
-    private readonly ILogger<SampleCommand> _logger = logger;
+    private readonly ILogger<QueryCommand> _logger;
 
-    protected override string GetCommandName() => "sample";
+    public QueryCommand(ILogger<QueryCommand> logger) : base()
+    {
+        _logger = logger;
+    }
+
+    protected override string GetCommandName() => "query";
 
     protected override string GetCommandDescription() =>
-        "Return a sample of rows from the specified table in an Azure Data Explorer (Kusto) table.";
+        """
+        Execute a KQL against items in a Kusto cluster. Requires cluster-uri, database, and query. Results are returned as a JSON array of documents.
+        """;
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
     public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
@@ -29,27 +36,26 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCom
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            var dataExplorerService = context.GetService<IDataExplorerService>();
-            List<JsonDocument> results;
-            var query = $"{args.Table} | sample {args.Limit}";
+            List<JsonDocument> results = [];
+            var kusto = context.GetService<IKustoService>();
 
             if (UseClusterUri(args))
             {
-                results = await dataExplorerService.QueryItems(
+                results = await kusto.QueryItems(
                     args.ClusterUri!,
                     args.Database!,
-                    query,
+                    args.Query!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
             else
             {
-                results = await dataExplorerService.QueryItems(
+                results = await kusto.QueryItems(
                     args.Subscription!,
                     args.ClusterName!,
                     args.Database!,
-                    query,
+                    args.Query!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
@@ -59,7 +65,8 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCom
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred sampling table. Table: {Table}.", args.Table);
+            _logger.LogError(ex, "An exception occurred querying Kusto. ClusterName: {ClusterName}, Database: {Database},"
+            + " Query: {Query}", args.ClusterName, args.Database, args.Query);
             HandleException(context.Response, ex);
         }
         return context.Response;

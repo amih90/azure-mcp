@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments;
-using AzureMcp.Commands.DataExplorer;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -16,21 +16,21 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xunit;
 
-namespace AzureMcp.Tests.Commands.DataExplorer;
+namespace AzureMcp.Tests.Commands.Kusto;
 
 public sealed class ClusterListCommandTests
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IDataExplorerService _dataExplorerService;
+    private readonly IKustoService _kusto;
     private readonly ILogger<ClusterListCommand> _logger;
 
     public ClusterListCommandTests()
     {
-        _dataExplorerService = Substitute.For<IDataExplorerService>();
+        _kusto = Substitute.For<IKustoService>();
         _logger = Substitute.For<ILogger<ClusterListCommand>>();
 
         var collection = new ServiceCollection();
-        collection.AddSingleton(_dataExplorerService);
+        collection.AddSingleton(_kusto);
 
         _serviceProvider = collection.BuildServiceProvider();
     }
@@ -40,7 +40,7 @@ public sealed class ClusterListCommandTests
     {
         // Arrange
         var expectedClusters = new List<string> { "clusterA", "clusterB" };
-        _dataExplorerService.ListClusters(
+        _kusto.ListClusters(
             "sub123", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
             .Returns(expectedClusters);
 
@@ -67,7 +67,7 @@ public sealed class ClusterListCommandTests
     public async Task ExecuteAsync_ReturnsNull_WhenNoClustersExist()
     {
         // Arrange
-        _dataExplorerService.ListClusters("sub123", null, null)
+        _kusto.ListClusters("sub123", null, null)
             .Returns([]);
 
         var command = new ClusterListCommand(_logger);
@@ -98,7 +98,7 @@ public sealed class ClusterListCommandTests
         };
 
         // Arrange
-        _dataExplorerService.ListClusters(subscriptionId, null, defaultRetryPolicy)
+        _kusto.ListClusters(subscriptionId, null, defaultRetryPolicy)
             .ThrowsAsync(new Exception("Test error"));
 
         var command = new ClusterListCommand(_logger);

@@ -26,13 +26,13 @@
             }
         },
         {
-            "name": "Debug Data Explorer Cluster List",
+            "name": "Debug Kusto Cluster List",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "cluster",
                 "list",
                 "--subscription",
@@ -46,19 +46,19 @@
             }
         },
         {
-            "name": "Debug Data Explorer Cluster Get",
+            "name": "Debug Kusto Cluster Get",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "cluster",
                 "get",
                 "--subscription",
                 "${input:subscription}",
                 "--cluster-name",
-                "${input:dataExplorerClusterName}"
+                "${input:kustoClusterName}"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -68,19 +68,19 @@
             }
         },
         {
-            "name": "Debug Data Explorer Database List",
+            "name": "Debug Kusto Database List",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "database",
                 "list",
                 "--subscription",
                 "${input:subscription}",
                 "--cluster-name",
-                "${input:dataExplorerClusterName}"
+                "${input:kustoClusterName}"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -90,17 +90,17 @@
             }
         },
         {
-            "name": "Debug Data Explorer Databases List with Cluster URI",
+            "name": "Debug Kusto Databases List with Cluster URI",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "database",
                 "list",
                 "--cluster-uri",
-                "${input:dataExplorerClusterUri}"
+                "${input:kustoClusterUri}"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -110,21 +110,21 @@
             }
         },
         {
-            "name": "Debug Data Explorer Table List",
+            "name": "Debug Kusto Table List",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "table",
                 "list",
                 "--subscription",
                 "${input:subscription}",
                 "--cluster-name",
-                "${input:dataExplorerClusterName}",
+                "${input:kustoClusterName}",
                 "--database-name",
-                "${input:dataExplorerDatabaseName}"
+                "${input:kustoDatabaseName}"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -134,19 +134,19 @@
             }
         },
         {
-            "name": "Debug Data Explorer Table List with Cluster URI",
+            "name": "Debug Kusto Table List with Cluster URI",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "table",
                 "list",
                 "--cluster-uri",
-                "${input:dataExplorerClusterUri}",
+                "${input:kustoClusterUri}",
                 "--database-name",
-                "${input:dataExplorerDatabaseName}"
+                "${input:kustoDatabaseName}"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -156,23 +156,23 @@
             }
         },
         {
-            "name": "Debug Data Explorer Table Schema",
+            "name": "Debug Kusto Table Schema",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "table",
                 "schema",
                 "--subscription",
                 "${input:subscription}",
                 "--cluster-name",
-                "${input:dataExplorerClusterName}",
+                "${input:kustoClusterName}",
                 "--database-name",
-                "${input:dataExplorerDatabaseName}",
+                "${input:kustoDatabaseName}",
                 "--table-name",
-                "${input:dataExplorerTableName}"
+                "${input:kustoTableName}"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -182,22 +182,22 @@
             }
         },
         {
-            "name": "Debug Data Explorer Sample",
+            "name": "Debug Kusto Sample",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "sample",
                 "--subscription",
                 "${input:subscription}",
                 "--cluster-name",
-                "${input:dataExplorerClusterName}",
+                "${input:kustoClusterName}",
                 "--database-name",
-                "${input:dataExplorerDatabaseName}",
+                "${input:kustoDatabaseName}",
                 "--table-name",
-                "${input:dataExplorerTableName}",
+                "${input:kustoTableName}",
                 "--limit",
                 "1"
             ],
@@ -209,22 +209,22 @@
             }
         },
         {
-            "name": "Debug Data Explorer Query",
+            "name": "Debug Kusto Query",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "query",
                 "--subscription",
                 "${input:subscription}",
                 "--cluster-name",
-                "${input:dataExplorerClusterName}",
+                "${input:kustoClusterName}",
                 "--database-name",
-                "${input:dataExplorerDatabaseName}",
+                "${input:kustoDatabaseName}",
                 "--query",
-                "${input:dataExplorerQuery}",
+                "${input:kustoQuery}",
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -234,20 +234,20 @@
             }
         },
         {
-            "name": "Debug Data Explorer Query with Cluster URI",
+            "name": "Debug Kusto Query with Cluster URI",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net9.0/azmcp.exe",
             "args": [
-                "data-explorer",
+                "kusto",
                 "query",
                 "--cluster-uri",
-                "${input:dataExplorerClusterUri}",
+                "${input:kustoClusterUri}",
                 "--database-name",
-                "${input:dataExplorerDatabaseName}",
+                "${input:kustoDatabaseName}",
                 "--query",
-                "${input:dataExplorerQuery}",
+                "${input:kustoQuery}",
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -410,31 +410,31 @@
             "default": ""
         },
         {
-            "id": "dataExplorerClusterUri",
+            "id": "kustoClusterUri",
             "type": "promptString",
-            "description": "Data Explorer Cluster URI (e.g. https://<cluster>.<region>.kusto.windows.net)",
+            "description": "Kusto Cluster URI (e.g. https://<cluster>.<region>.kusto.windows.net)",
             "default": ""
         },
         {
-            "id": "dataExplorerClusterName",
+            "id": "kustoClusterName",
             "type": "promptString",
-            "description": "Data Explorer Cluster Name",
+            "description": "Kusto Cluster Name",
             "default": ""
         },
         {
-            "id": "dataExplorerDatabaseName",
+            "id": "kustoDatabaseName",
             "type": "promptString",
-            "description": "Data Explorer Database Name",
+            "description": "Kusto Database Name",
             "default": ""
         },
         {
-            "id": "dataExplorerTableName",
+            "id": "kustoTableName",
             "type": "promptString",
-            "description": "Data Explorer Table Name",
+            "description": "Kusto Table Name",
             "default": ""
         },
         {
-            "id": "dataExplorerQuery",
+            "id": "kustoQuery",
             "type": "promptString",
             "description": "Kusto Query (KQL)",
             "default": ""

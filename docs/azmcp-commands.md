@@ -48,30 +48,30 @@ azmcp cosmos database container item query --subscription <subscription> \
                        [--query "SELECT * FROM c"]
 ```
 
-### Data Explorer Operations
+### Kusto Operations
 ```bash
-# List Data Explorer clusters in a subscription
-azmcp data-explorer cluster list --subscription <subscription>
+# List Kusto clusters in a subscription
+azmcp kusto cluster list --subscription <subscription>
 
-# Get details for a Data Explorer cluster
-azmcp data-explorer cluster get --subscription <subscription> --cluster-name <cluster-name>
+# Get details for a Kusto cluster
+azmcp kusto cluster get --subscription <subscription> --cluster-name <cluster-name>
 
-# List databases in a Data Explorer cluster
-azmcp data-explorer database list [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
+# List databases in a Kusto cluster
+azmcp kusto database list [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
 
-azmcp data-explorer table list [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
+azmcp kusto table list [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
                                 --database-name <database-name> \
 
-azmcp data-explorer table schema [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
+azmcp kusto table schema [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
                                   --database-name <database-name> \
                                   --table <table-name>
 
-# Query a Data Explorer database
-azmcp data-explorer query [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
+# Query a Kusto database
+azmcp kusto query [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
                            --database-name <database-name> \
                            --query "<kql-query>"
 
-azmcp data-explorer sample [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
+azmcp kusto sample [--cluster-uri <cluster-uri> | --subscription <subscription> --cluster-name <cluster-name>]
                             --database-name <database-name> \
                             --table <table-name> \
                            [--limit <limit>]

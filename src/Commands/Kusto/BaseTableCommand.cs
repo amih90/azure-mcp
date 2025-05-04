@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Argument;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
-public abstract class BaseSampleCommand<TArgs> : BaseTableCommand<TArgs> where TArgs : SampleArguments, new()
+public abstract class BaseTableCommand<TArgs> : BaseDatabaseCommand<TArgs> where TArgs : BaseTableArguments, new()
 {
-    protected readonly Option<int> _limitOption = ArgumentDefinitions.DataExplorer.Limit.ToOption();
+    protected readonly Option<string> _tableOption = ArgumentDefinitions.Kusto.Table.ToOption();
 
     protected override void RegisterOptions(Command command)
     {
         base.RegisterOptions(command);
-        command.AddOption(_limitOption);
+        command.AddOption(_tableOption);
     }
 
     protected override TArgs BindArguments(ParseResult parseResult)
     {
         var args = base.BindArguments(parseResult);
-        args.Limit = parseResult.GetValueForOption(_limitOption);
+        args.Table = parseResult.GetValueForOption(_tableOption);
         return args;
     }
 }

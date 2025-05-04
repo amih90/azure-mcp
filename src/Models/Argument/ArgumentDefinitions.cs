@@ -292,7 +292,7 @@ public static class ArgumentDefinitions
         }
     }
 
-    public static class DataExplorer
+    public static class Kusto
     {
         public const string ClusterName = "cluster-name";
         public const string ClusterUriName = "cluster-uri";
@@ -304,25 +304,25 @@ public static class ArgumentDefinitions
 
         public static readonly ArgumentDefinition<string> Cluster = new(
             ClusterName,
-            "Azure Data Explorer (Kusto) Cluster name.",
+            "Kusto Cluster name.",
             required: false
         );
 
         public static readonly ArgumentDefinition<string> ClusterUri = new(
             ClusterUriName,
-            "Azure Data Explorer (Kusto) Cluster URI.",
+            "Kusto Cluster URI.",
             required: false
         );
 
         public static readonly ArgumentDefinition<string> Database = new(
             DatabaseName,
-            "Azure Data Explorer (Kusto) Database name.",
+            "Kusto Database name.",
             required: true
         );
 
         public static readonly ArgumentDefinition<string> Table = new(
             TableName,
-            "Azure Data Explorer (Kusto) Table name.",
+            "Kusto Table name.",
             required: true
         );
 

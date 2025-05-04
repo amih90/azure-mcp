@@ -1,31 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
-using AzureMcp.Models;
+using AzureMcp.Arguments.Kusto;
+using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
+using System.Text.Json;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
-public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArguments>
+public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : BaseTableCommand<TableSchemaArguments>
 {
-    private readonly ILogger<DatabaseListCommand> _logger;
+    private readonly ILogger<TableSchemaCommand> _logger = logger;
 
-    public DatabaseListCommand(ILogger<DatabaseListCommand> logger) : base()
-    {
-        _logger = logger;
-    }
-
-    protected override string GetCommandName() => "list";
+    protected override string GetCommandName() => "schema";
 
     protected override string GetCommandDescription() =>
-        """
-        List all databases in a Data Explorer cluster. This command retrieves all databases available in the specified cluster and subscription. Results include database names and are returned as a JSON array.
-        """;
+        "Get the schema of a specific table in an Kusto database.";
 
     [McpServerTool(Destructive = false, ReadOnly = true)]
     public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
@@ -36,33 +30,36 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            var dataExplorerService = context.GetService<IDataExplorerService>();
-
-            List<string> databases = [];
+            var kusto = context.GetService<IKustoService>();
+            List<JsonDocument> schema;
 
             if (UseClusterUri(args))
             {
-                databases = await dataExplorerService.ListDatabases(
+                schema = await kusto.GetTableSchema(
                     args.ClusterUri!,
+                    args.Database!,
+                    args.Table!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
             else
             {
-                databases = await dataExplorerService.ListDatabases(
+                schema = await kusto.GetTableSchema(
                     args.Subscription!,
                     args.ClusterName!,
+                    args.Database!,
+                    args.Table!,
                     args.Tenant,
                     args.AuthMethod,
                     args.RetryPolicy);
             }
 
-            context.Response.Results = databases?.Count > 0 ? new { databases } : null;
+            context.Response.Results = schema?.Count > 0 ? new { schema } : null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred listing databases. ClusterName: {ClusterName}.", args.ClusterName);
+            _logger.LogError(ex, "An exception occurred getting table schema. Table: {Table}.", args.Table);
             HandleException(context.Response, ex);
         }
         return context.Response;

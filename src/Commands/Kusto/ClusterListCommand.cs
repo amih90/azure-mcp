@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
 public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArguments>
 {
@@ -23,7 +23,7 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
 
     protected override string GetCommandDescription() =>
         """
-        List all Data Explorer clusters in a subscription. This command retrieves all clusters 
+        List all Kusto clusters in a subscription. This command retrieves all clusters 
         available in the specified subscription. Results include cluster names and are returned as a JSON array.
         """;
 
@@ -36,8 +36,8 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            var dataExplorerService = context.GetService<IDataExplorerService>();
-            var clusters = await dataExplorerService.ListClusters(
+            var kusto = context.GetService<IKustoService>();
+            var clusters = await kusto.ListClusters(
                 args.Subscription!,
                 args.Tenant,
                 args.RetryPolicy);
@@ -48,7 +48,7 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing Data Explorer clusters");
+            _logger.LogError(ex, "Error listing Kusto clusters");
             HandleException(context.Response, ex);
         }
         return context.Response;

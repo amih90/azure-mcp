@@ -3,6 +3,6 @@
 
 using System.Text.Json.Serialization;
 
-namespace AzureMcp.Arguments.DataExplorer;
+namespace AzureMcp.Arguments.Kusto;
 
 public class TableSchemaArguments : BaseTableArguments;

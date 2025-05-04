@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace AzureMcp.Arguments.DataExplorer;
+namespace AzureMcp.Arguments.Kusto;
 
 public class SampleArguments : BaseTableArguments
 {

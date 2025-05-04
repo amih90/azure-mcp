@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments;
-using AzureMcp.Arguments.DataExplorer;
-using AzureMcp.Commands.DataExplorer;
+using AzureMcp.Arguments.Kusto;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -15,20 +15,20 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xunit;
 
-namespace AzureMcp.Tests.Commands.DataExplorer;
+namespace AzureMcp.Tests.Commands.Kusto;
 
 public sealed class DatabaseListCommandTests
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IDataExplorerService _dataExplorerService;
+    private readonly IKustoService _kusto;
     private readonly ILogger<DatabaseListCommand> _logger;
 
     public DatabaseListCommandTests()
     {
-        _dataExplorerService = Substitute.For<IDataExplorerService>();
+        _kusto = Substitute.For<IKustoService>();
         _logger = Substitute.For<ILogger<DatabaseListCommand>>();
         var collection = new ServiceCollection();
-        collection.AddSingleton(_dataExplorerService);
+        collection.AddSingleton(_kusto);
         _serviceProvider = collection.BuildServiceProvider();
     }
 
@@ -46,14 +46,14 @@ public sealed class DatabaseListCommandTests
         var expectedDatabases = new List<string> { "db1", "db2" };
         if (useClusterUri)
         {
-            _dataExplorerService.ListDatabases(
+            _kusto.ListDatabases(
                 "https://mycluster.kusto.windows.net",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(expectedDatabases);
         }
         else
         {
-            _dataExplorerService.ListDatabases(
+            _kusto.ListDatabases(
                 "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(expectedDatabases);
         }
@@ -81,14 +81,14 @@ public sealed class DatabaseListCommandTests
         // Arrange
         if (useClusterUri)
         {
-            _dataExplorerService.ListDatabases(
+            _kusto.ListDatabases(
                 "https://mycluster.kusto.windows.net",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns([]);
         }
         else
         {
-            _dataExplorerService.ListDatabases(
+            _kusto.ListDatabases(
                 "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns([]);
         }
@@ -113,14 +113,14 @@ public sealed class DatabaseListCommandTests
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         if (useClusterUri)
         {
-            _dataExplorerService.ListDatabases(
+            _kusto.ListDatabases(
                 "https://mycluster.kusto.windows.net",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(Task.FromException<List<string>>(new Exception("Test error")));
         }
         else
         {
-            _dataExplorerService.ListDatabases(
+            _kusto.ListDatabases(
                 "sub1", "mycluster", Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(Task.FromException<List<string>>(new Exception("Test error")));
         }

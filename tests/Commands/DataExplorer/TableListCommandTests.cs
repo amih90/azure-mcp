@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments;
-using AzureMcp.Arguments.DataExplorer;
-using AzureMcp.Commands.DataExplorer;
+using AzureMcp.Arguments.Kusto;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -13,20 +13,20 @@ using NSubstitute;
 using System.CommandLine.Parsing;
 using Xunit;
 
-namespace AzureMcp.Tests.Commands.DataExplorer;
+namespace AzureMcp.Tests.Commands.Kusto;
 
 public sealed class TableListCommandTests
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IDataExplorerService _dataExplorerService;
+    private readonly IKustoService _kusto;
     private readonly ILogger<TableListCommand> _logger;
 
     public TableListCommandTests()
     {
-        _dataExplorerService = Substitute.For<IDataExplorerService>();
+        _kusto = Substitute.For<IKustoService>();
         _logger = Substitute.For<ILogger<TableListCommand>>();
         var collection = new ServiceCollection();
-        collection.AddSingleton(_dataExplorerService);
+        collection.AddSingleton(_kusto);
         _serviceProvider = collection.BuildServiceProvider();
     }
 
@@ -43,7 +43,7 @@ public sealed class TableListCommandTests
         var expectedTables = new List<string> { "table1", "table2" };
         if (useClusterUri)
         {
-            _dataExplorerService.ListTables(
+            _kusto.ListTables(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
@@ -51,7 +51,7 @@ public sealed class TableListCommandTests
         }
         else
         {
-            _dataExplorerService.ListTables(
+            _kusto.ListTables(
                 "sub1", "mycluster", "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(expectedTables);
@@ -75,7 +75,7 @@ public sealed class TableListCommandTests
     {
         if (useClusterUri)
         {
-            _dataExplorerService.ListTables(
+            _kusto.ListTables(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
@@ -83,7 +83,7 @@ public sealed class TableListCommandTests
         }
         else
         {
-            _dataExplorerService.ListTables(
+            _kusto.ListTables(
                 "sub1", "mycluster", "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(new List<string>());
@@ -105,7 +105,7 @@ public sealed class TableListCommandTests
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         if (useClusterUri)
         {
-            _dataExplorerService.ListTables(
+            _kusto.ListTables(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
@@ -113,7 +113,7 @@ public sealed class TableListCommandTests
         }
         else
         {
-            _dataExplorerService.ListTables(
+            _kusto.ListTables(
                 "sub1", "mycluster", "db1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(Task.FromException<List<string>>(new Exception("Test error")));

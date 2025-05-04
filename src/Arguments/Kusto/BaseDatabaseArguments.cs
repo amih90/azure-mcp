@@ -4,10 +4,10 @@
 using AzureMcp.Models.Argument;
 using System.Text.Json.Serialization;
 
-namespace AzureMcp.Arguments.DataExplorer;
+namespace AzureMcp.Arguments.Kusto;
 
 public class BaseDatabaseArguments : BaseClusterArguments
 {
-    [JsonPropertyName(ArgumentDefinitions.DataExplorer.DatabaseName)]
+    [JsonPropertyName(ArgumentDefinitions.Kusto.DatabaseName)]
     public string? Database { get; set; }
 }

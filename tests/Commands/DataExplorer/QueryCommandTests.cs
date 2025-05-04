@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments;
-using AzureMcp.Arguments.DataExplorer;
-using AzureMcp.Commands.DataExplorer;
+using AzureMcp.Arguments.Kusto;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -16,20 +16,20 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xunit;
 
-namespace AzureMcp.Tests.Commands.DataExplorer;
+namespace AzureMcp.Tests.Commands.Kusto;
 
 public sealed class QueryCommandTests
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IDataExplorerService _dataExplorerService;
+    private readonly IKustoService _kusto;
     private readonly ILogger<QueryCommand> _logger;
 
     public QueryCommandTests()
     {
-        _dataExplorerService = Substitute.For<IDataExplorerService>();
+        _kusto = Substitute.For<IKustoService>();
         _logger = Substitute.For<ILogger<QueryCommand>>();
         var collection = new ServiceCollection();
-        collection.AddSingleton(_dataExplorerService);
+        collection.AddSingleton(_kusto);
         _serviceProvider = collection.BuildServiceProvider();
     }
 
@@ -47,7 +47,7 @@ public sealed class QueryCommandTests
         var expectedJson = JsonDocument.Parse("[{\"foo\":42}]");
         if (useClusterUri)
         {
-            _dataExplorerService.QueryItems(
+            _kusto.QueryItems(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "StormEvents | take 1",
@@ -56,7 +56,7 @@ public sealed class QueryCommandTests
         }
         else
         {
-            _dataExplorerService.QueryItems(
+            _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(new List<JsonDocument> { expectedJson });
@@ -87,7 +87,7 @@ public sealed class QueryCommandTests
     {
         if (useClusterUri)
         {
-            _dataExplorerService.QueryItems(
+            _kusto.QueryItems(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "StormEvents | take 1",
@@ -96,7 +96,7 @@ public sealed class QueryCommandTests
         }
         else
         {
-            _dataExplorerService.QueryItems(
+            _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(new List<JsonDocument>());
@@ -119,7 +119,7 @@ public sealed class QueryCommandTests
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         if (useClusterUri)
         {
-            _dataExplorerService.QueryItems(
+            _kusto.QueryItems(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "StormEvents | take 1",
@@ -128,7 +128,7 @@ public sealed class QueryCommandTests
         }
         else
         {
-            _dataExplorerService.QueryItems(
+            _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(Task.FromException<List<JsonDocument>>(new Exception("Test error")));

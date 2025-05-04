@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.CommandLine.Parsing;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
 public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
 {
@@ -23,7 +23,7 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
 
     protected override string GetCommandDescription() =>
         """
-        Get details for a specific Azure Data Explorer (Kusto) cluster. Requires --cluster-name and --subscription.
+        Get details for a specific Kusto cluster. Requires --cluster-name and --subscription.
         The response includes the clusterUri property for use in subsequent commands.
         """;
 
@@ -36,8 +36,8 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            var dataExplorerService = context.GetService<IDataExplorerService>();
-            var cluster = await dataExplorerService.GetCluster(
+            var kusto = context.GetService<IKustoService>();
+            var cluster = await kusto.GetCluster(
                 args.Subscription!,
                 args.ClusterName!,
                 args.Tenant,
@@ -47,7 +47,7 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting Data Explorer cluster details");
+            _logger.LogError(ex, "Error getting Kusto cluster details");
             HandleException(context.Response, ex);
         }
         return context.Response;

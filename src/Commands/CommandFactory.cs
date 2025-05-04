@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Commands.Cosmos;
-using AzureMcp.Commands.DataExplorer;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Commands.Server;
 using AzureMcp.Commands.Storage.Blob;
 using AzureMcp.Commands.Subscription;
@@ -75,7 +75,7 @@ public class CommandFactory
     {
         // Register top-level command groups
         RegisterCosmosCommands();
-        RegisterDataExplorerCommands();
+        RegisterKustoCommands();
         RegisterStorageCommands();
         RegisterMonitorCommands();
         RegisterAppConfigCommands();
@@ -114,32 +114,32 @@ public class CommandFactory
         cosmosItem.AddCommand("query", new Cosmos.ItemQueryCommand(GetLogger<Cosmos.ItemQueryCommand>()));
     }
 
-    private void RegisterDataExplorerCommands()
+    private void RegisterKustoCommands()
     {
-        // Create Data Explorer command group
-        var dataExplorer = new CommandGroup("data-explorer", "Azure Data Explorer (Kusto) operations - Commands for managing and querying Azure Data Explorer clusters.");
-        _rootGroup.AddSubGroup(dataExplorer);
+        // Create Kusto command group
+        var kusto = new CommandGroup("kusto", "Kusto operations - Commands for managing and querying Azure Kusto clusters.");
+        _rootGroup.AddSubGroup(kusto);
 
-        // Create Data Explorer cluster subgroups
-        var clusters = new CommandGroup("cluster", "Data Explorer cluster operations - Commands for listing clusters in your Azure subscription.");
-        dataExplorer.AddSubGroup(clusters);
+        // Create Kusto cluster subgroups
+        var clusters = new CommandGroup("cluster", "Kusto cluster operations - Commands for listing clusters in your Azure subscription.");
+        kusto.AddSubGroup(clusters);
 
-        var databases = new CommandGroup("database", "Data Explorer database operations - Commands for listing databases in a cluster.");
-        dataExplorer.AddSubGroup(databases);
+        var databases = new CommandGroup("database", "Kusto database operations - Commands for listing databases in a cluster.");
+        kusto.AddSubGroup(databases);
 
-        var tables = new CommandGroup("table", "Data Explorer table operations - Commands for listing tables in a database.");
-        dataExplorer.AddSubGroup(tables);
+        var tables = new CommandGroup("table", "Kusto table operations - Commands for listing tables in a database.");
+        kusto.AddSubGroup(tables);
 
-        dataExplorer.AddCommand("sample", new DataExplorer.SampleCommand(GetLogger<DataExplorer.SampleCommand>()));
-        dataExplorer.AddCommand("query", new DataExplorer.QueryCommand(GetLogger<DataExplorer.QueryCommand>()));
+        kusto.AddCommand("sample", new Kusto.SampleCommand(GetLogger<Kusto.SampleCommand>()));
+        kusto.AddCommand("query", new Kusto.QueryCommand(GetLogger<Kusto.QueryCommand>()));
 
-        clusters.AddCommand("list", new DataExplorer.ClusterListCommand(GetLogger<DataExplorer.ClusterListCommand>()));
-        clusters.AddCommand("get", new DataExplorer.ClusterGetCommand(GetLogger<DataExplorer.ClusterGetCommand>()));
+        clusters.AddCommand("list", new Kusto.ClusterListCommand(GetLogger<Kusto.ClusterListCommand>()));
+        clusters.AddCommand("get", new Kusto.ClusterGetCommand(GetLogger<Kusto.ClusterGetCommand>()));
 
-        databases.AddCommand("list", new DataExplorer.DatabaseListCommand(GetLogger<DataExplorer.DatabaseListCommand>()));
+        databases.AddCommand("list", new Kusto.DatabaseListCommand(GetLogger<Kusto.DatabaseListCommand>()));
 
-        tables.AddCommand("list", new DataExplorer.TableListCommand(GetLogger<DataExplorer.TableListCommand>()));
-        tables.AddCommand("schema", new DataExplorer.TableSchemaCommand(GetLogger<DataExplorer.TableSchemaCommand>()));
+        tables.AddCommand("list", new Kusto.TableListCommand(GetLogger<Kusto.TableListCommand>()));
+        tables.AddCommand("schema", new Kusto.TableSchemaCommand(GetLogger<Kusto.TableSchemaCommand>()));
     }
 
     private void RegisterStorageCommands()

@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using AzureMcp.Arguments.DataExplorer;
+using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Argument;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 
-namespace AzureMcp.Commands.DataExplorer;
+namespace AzureMcp.Commands.Kusto;
 
 public abstract class BaseQueryCommand<TArgs> : BaseDatabaseCommand<TArgs> where TArgs : QueryArguments, new()
 {
-    protected readonly Option<string> _queryOption = ArgumentDefinitions.DataExplorer.Query.ToOption();
+    protected readonly Option<string> _queryOption = ArgumentDefinitions.Kusto.Query.ToOption();
 
 
     protected override void RegisterOptions(Command command)

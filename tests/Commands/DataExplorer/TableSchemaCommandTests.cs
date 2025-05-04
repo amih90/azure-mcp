@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using AzureMcp.Arguments; // For RetryPolicyArguments
-using AzureMcp.Commands.DataExplorer;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models; // For AuthMethod
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -12,20 +12,20 @@ using NSubstitute;
 using System.CommandLine.Parsing;
 using Xunit;
 
-namespace AzureMcp.Tests.Commands.DataExplorer;
+namespace AzureMcp.Tests.Commands.Kusto;
 
 public sealed class TableSchemaCommandTests
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IDataExplorerService _dataExplorerService;
+    private readonly IKustoService _kusto;
     private readonly ILogger<TableSchemaCommand> _logger;
 
     public TableSchemaCommandTests()
     {
-        _dataExplorerService = Substitute.For<IDataExplorerService>();
+        _kusto = Substitute.For<IKustoService>();
         _logger = Substitute.For<ILogger<TableSchemaCommand>>();
         var collection = new ServiceCollection();
-        collection.AddSingleton(_dataExplorerService);
+        collection.AddSingleton(_kusto);
         _serviceProvider = collection.BuildServiceProvider();
     }
 
@@ -45,7 +45,7 @@ public sealed class TableSchemaCommandTests
         };
         if (useClusterUri)
         {
-            _dataExplorerService.GetTableSchema(
+            _kusto.GetTableSchema(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "table1",
@@ -54,7 +54,7 @@ public sealed class TableSchemaCommandTests
         }
         else
         {
-            _dataExplorerService.GetTableSchema(
+            _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(expectedSchema);
@@ -80,7 +80,7 @@ public sealed class TableSchemaCommandTests
     {
         if (useClusterUri)
         {
-            _dataExplorerService.GetTableSchema(
+            _kusto.GetTableSchema(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "table1",
@@ -89,7 +89,7 @@ public sealed class TableSchemaCommandTests
         }
         else
         {
-            _dataExplorerService.GetTableSchema(
+            _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(new List<System.Text.Json.JsonDocument>());
@@ -111,7 +111,7 @@ public sealed class TableSchemaCommandTests
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
         if (useClusterUri)
         {
-            _dataExplorerService.GetTableSchema(
+            _kusto.GetTableSchema(
                 "https://mycluster.kusto.windows.net",
                 "db1",
                 "table1",
@@ -120,7 +120,7 @@ public sealed class TableSchemaCommandTests
         }
         else
         {
-            _dataExplorerService.GetTableSchema(
+            _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
                 .Returns(Task.FromException<List<System.Text.Json.JsonDocument>>(new Exception("Test error")));
