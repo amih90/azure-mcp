@@ -85,7 +85,7 @@ public sealed class KustoService(
             {
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 #pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-                var json = JsonSerializer.SerializeToElement<KustoClusterResource>(cluster);
+                var json = JsonSerializer.SerializeToElement(cluster);
 #pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 
@@ -108,25 +108,11 @@ public sealed class KustoService(
 
         string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
 
-        return await _ListDatabases(clusterUri, clusterName, tenant, authMethod, retryPolicy);
+        return await ListDatabases(clusterUri, clusterName, tenant, authMethod, retryPolicy);
     }
 
     public async Task<List<string>> ListDatabases(
         string clusterUri,
-        string? tenant = null,
-        AuthMethod? authMethod = AuthMethod.Credential,
-        RetryPolicyArguments? retryPolicy = null)
-    {
-        ValidateRequiredParameters(clusterUri);
-
-        var clusterName = await GetClusterNameFromUri(clusterUri, tenant, retryPolicy);
-
-        return await _ListDatabases(clusterUri, clusterName, tenant, authMethod, retryPolicy);
-    }
-
-    private async Task<List<string>> _ListDatabases(
-        string clusterUri,
-        string clusterName,
         string? tenant = null,
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null)
@@ -144,7 +130,7 @@ public sealed class KustoService(
         var clientRequestProperties = CreateClientRequestProperties();
         var result = new List<string>();
         using (var reader = await cslAdminProvider.ExecuteControlCommandAsync(
-            clusterName,
+            cslAdminProvider.DefaultDatabaseName,
             ".show databases",
             clientRequestProperties))
         {
@@ -382,27 +368,5 @@ public sealed class KustoService(
         }
 
         return value!;
-    }
-
-    private async Task<string> GetClusterNameFromUri(
-        string clusterUri,
-        string? tenant = null,
-        RetryPolicyArguments? retryPolicy = null)
-    {
-        var subscriptionsOptions = await _subscriptionService.GetSubscriptions(tenant, retryPolicy);
-        foreach (var subscriptionOption in subscriptionsOptions)
-        {
-            var subscription = await _subscriptionService.GetSubscription(subscriptionOption.Id, tenant, retryPolicy);
-
-            await foreach (var cluster in subscription.GetKustoClustersAsync())
-            {
-                if (string.Equals(cluster.Data.ClusterUri?.ToString(), clusterUri, StringComparison.OrdinalIgnoreCase))
-                {
-                    return cluster.Data.Name;
-                }
-            }
-        }
-
-        throw new Exception($"Could not find Kusto cluster with URI '{clusterUri}' in any subscription.");
     }
 }

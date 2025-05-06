@@ -42,6 +42,7 @@ public abstract class BaseClusterCommand<
             if (!string.IsNullOrEmpty(clusterUri))
             {
                 // If clusterUri is provided, make subscription optional
+                _subscriptionOption.IsRequired = false;
                 var subscriptionArgument = GetArguments()?.FirstOrDefault(arg => string.Equals(arg.Name, "subscription", StringComparison.OrdinalIgnoreCase));
                 if (subscriptionArgument != null)
                 {
