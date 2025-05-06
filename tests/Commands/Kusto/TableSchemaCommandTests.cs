@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.CommandLine.Parsing;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using AzureMcp.Arguments;
 using AzureMcp.Commands.Kusto;
@@ -43,7 +42,7 @@ public sealed class TableSchemaCommandTests
     public async Task ExecuteAsync_ReturnsSchema(string cliArgs, bool useClusterUri)
     {
         var expectedSchema = "col1:datetime,col2:string";
-        
+
         if (useClusterUri)
         {
             _kusto.GetTableSchema(
@@ -72,7 +71,7 @@ public sealed class TableSchemaCommandTests
         var result = System.Text.Json.JsonSerializer.Deserialize<TableSchemaResult>(json);
         Assert.NotNull(result);
         Assert.NotNull(result.Schema);
-        
+
         Assert.Equal(expectedSchema, result.Schema);
     }
 
@@ -82,7 +81,7 @@ public sealed class TableSchemaCommandTests
     {
         // Arrange
         var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
-        
+
         if (useClusterUri)
         {
             _kusto.GetTableSchema(
@@ -105,7 +104,7 @@ public sealed class TableSchemaCommandTests
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);
-        
+
         // Assert
         Assert.NotNull(response);
         Assert.Equal(500, response.Status);

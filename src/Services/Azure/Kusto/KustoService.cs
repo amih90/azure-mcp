@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Azure.ResourceManager.Kusto;
 using AzureMcp.Arguments;
-using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 using AzureMcp.Services.Interfaces;
 using Kusto.Data;
@@ -367,10 +366,10 @@ public sealed class KustoService(
     }
 
     private async Task<string> GetClusterProperty(
-        string subscriptionId, 
-        string clusterName, 
+        string subscriptionId,
+        string clusterName,
         string propertyName,
-        string? tenant, 
+        string? tenant,
         RetryPolicyArguments? retryPolicy)
     {
         var cluster = await GetCluster(subscriptionId, clusterName, tenant, retryPolicy);
@@ -386,8 +385,8 @@ public sealed class KustoService(
     }
 
     private async Task<string> GetClusterNameFromUri(
-        string clusterUri, 
-        string? tenant = null, 
+        string clusterUri,
+        string? tenant = null,
         RetryPolicyArguments? retryPolicy = null)
     {
         var subscriptionsOptions = await _subscriptionService.GetSubscriptions(tenant, retryPolicy);
