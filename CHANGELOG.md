@@ -1,14 +1,15 @@
 # Release History
 
-## 0.0.12 (Unreleased)
+## 0.0.12 (2025-05-05)
 
 ### Features Added
 
-### Breaking Changes
-
-### Bugs Fixed
+- Azure Search Tools https://github.com/Azure/azure-mcp/pull/83
 
 ### Other Changes
+
+- Arguments no longer echoed in response: https://github.com/Azure/azure-mcp/pull/79
+- Editorconfig and gitattributes updated: https://github.com/Azure/azure-mcp/pull/91
 
 ## 0.0.11 (2025-04-29)
 
