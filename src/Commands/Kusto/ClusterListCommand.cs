@@ -49,7 +49,7 @@ public sealed class ClusterListCommand : SubscriptionCommand<ClusterListArgument
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing Kusto clusters");
+            _logger.LogError(ex, "An exception occurred listing Kusto clusters. Subscription: {Subscription}.", args.Subscription);
             HandleException(context.Response, ex);
         }
         return context.Response;

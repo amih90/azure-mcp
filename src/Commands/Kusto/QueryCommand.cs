@@ -69,8 +69,8 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred querying Kusto. ClusterName: {ClusterName}, Database: {Database},"
-            + " Query: {Query}", args.ClusterName, args.Database, args.Query);
+            _logger.LogError(ex, "An exception occurred querying Kusto. Cluster: {Cluster}, Database: {Database},"
+            + " Query: {Query}", args.ClusterUri ?? args.ClusterName, args.Database, args.Query);
             HandleException(context.Response, ex);
         }
         return context.Response;

@@ -50,7 +50,7 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting Kusto cluster details");
+            _logger.LogError(ex, "An exception occurred getting Kusto cluster details. Cluster: {Cluster}.", args.ClusterName);
             HandleException(context.Response, ex);
         }
         return context.Response;

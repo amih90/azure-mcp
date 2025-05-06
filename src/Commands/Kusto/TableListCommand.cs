@@ -57,7 +57,7 @@ public sealed class TableListCommand(ILogger<TableListCommand> logger) : BaseDat
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred listing tables. Database: {Database}.", args.Database);
+            _logger.LogError(ex, "An exception occurred listing tables. Cluster: {Cluster}, Database: {Database}.", args.ClusterUri ?? args.ClusterName, args.Database);
             HandleException(context.Response, ex);
         }
         return context.Response;

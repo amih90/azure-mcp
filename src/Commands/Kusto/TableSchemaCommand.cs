@@ -61,7 +61,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred getting table schema. Table: {Table}.", args.Table);
+            _logger.LogError(ex, "An exception occurred getting table schema. Cluster: {Cluster}, Table: {Table}.", args.ClusterUri ?? args.ClusterName, args.Table);
             HandleException(context.Response, ex);
         }
         return context.Response;

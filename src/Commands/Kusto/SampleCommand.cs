@@ -65,7 +65,7 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCom
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred sampling table. Table: {Table}.", args.Table);
+            _logger.LogError(ex, "An exception occurred sampling table. Cluster: {Cluster}, Database: {Database}, Table: {Table}.", args.ClusterUri ?? args.ClusterName, args.Database, args.Table);
             HandleException(context.Response, ex);
         }
         return context.Response;

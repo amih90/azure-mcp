@@ -3,7 +3,6 @@
 
 using System.CommandLine.Parsing;
 using AzureMcp.Arguments.Kusto;
-using AzureMcp.Models;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -65,7 +64,7 @@ public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArgume
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred listing databases. ClusterName: {ClusterName}.", args.ClusterName);
+            _logger.LogError(ex, "An exception occurred listing databases. Cluster: {Cluster}.", args.ClusterUri ?? args.ClusterName);
             HandleException(context.Response, ex);
         }
         return context.Response;
