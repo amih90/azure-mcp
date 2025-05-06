@@ -44,7 +44,7 @@ public sealed class SampleCommandTests
     public async Task ExecuteAsync_ReturnsSampleResults(string cliArgs, bool useClusterUri)
     {
         // Arrange
-        var expectedJson = JsonNode.Parse("[{\"foo\":42}]")!.AsArray();
+        var expectedJson = System.Text.Json.JsonDocument.Parse("[{\"foo\":42}]").RootElement.EnumerateArray().Select(e => e.Clone()).ToList();
         if (useClusterUri)
         {
             _kusto.QueryItems(
@@ -52,14 +52,14 @@ public sealed class SampleCommandTests
                 "db1",
                 "table1 | sample 10",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(expectedJson.Cast<JsonNode>().ToList());
+                .Returns(expectedJson);
         }
         else
         {
             _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "table1 | sample 10",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(expectedJson.Cast<JsonNode>().ToList());
+                .Returns(expectedJson);
         }
         var command = new SampleCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -77,8 +77,8 @@ public sealed class SampleCommandTests
         Assert.NotNull(result);
         Assert.NotNull(result.Results);
         Assert.Single(result.Results);
-        var actualJson = result.Results[0]?.ToJsonString();
-        var expectedJsonText = expectedJson[0]?.ToJsonString();
+        var actualJson = result.Results[0].ToString();
+        var expectedJsonText = expectedJson[0].ToString();
         Assert.Equal(expectedJsonText, actualJson);
     }
 
@@ -93,14 +93,14 @@ public sealed class SampleCommandTests
                 "db1",
                 "table1 | sample 10",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<JsonNode>());
+                .Returns(new List<System.Text.Json.JsonElement>());
         }
         else
         {
             _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "table1 | sample 10",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<JsonNode>());
+                .Returns(new List<System.Text.Json.JsonElement>());
         }
         var command = new SampleCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -124,14 +124,14 @@ public sealed class SampleCommandTests
                 "db1",
                 "table1 | sample 10",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<JsonNode>>(new Exception("Test error")));
+                .Returns(Task.FromException<List<System.Text.Json.JsonElement>>(new Exception("Test error")));
         }
         else
         {
             _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "table1 | sample 10",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<JsonNode>>(new Exception("Test error")));
+                .Returns(Task.FromException<List<System.Text.Json.JsonElement>>(new Exception("Test error")));
         }
         var command = new SampleCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -160,6 +160,6 @@ public sealed class SampleCommandTests
     private sealed class SampleResult
     {
         [JsonPropertyName("results")]
-        public List<JsonNode> Results { get; set; } = new();
+        public List<System.Text.Json.JsonElement> Results { get; set; } = new();
     }
 }

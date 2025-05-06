@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine.Parsing;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using AzureMcp.Arguments; // For RetryPolicyArguments
 using AzureMcp.Commands.Kusto;
 using AzureMcp.Models; // For AuthMethod
@@ -40,9 +40,9 @@ public sealed class TableSchemaCommandTests
     [MemberData(nameof(TableSchemaArgumentMatrix))]
     public async Task ExecuteAsync_ReturnsSchema(string cliArgs, bool useClusterUri)
     {
-        var expectedSchema = new List<JsonNode> {
-            JsonNode.Parse("{\"Name\":\"col1\",\"Type\":\"string\"}")!,
-            JsonNode.Parse("{\"Name\":\"col2\",\"Type\":\"int\"}")!
+        var expectedSchema = new List<System.Text.Json.JsonElement> {
+            System.Text.Json.JsonDocument.Parse("{\"Name\":\"col1\",\"Type\":\"string\"}").RootElement.Clone(),
+            System.Text.Json.JsonDocument.Parse("{\"Name\":\"col2\",\"Type\":\"int\"}").RootElement.Clone()
         };
         if (useClusterUri)
         {
@@ -73,8 +73,8 @@ public sealed class TableSchemaCommandTests
         Assert.NotNull(result);
         Assert.NotNull(result.Schema);
         Assert.Equal(2, result.Schema.Count);
-        Assert.Equal("col1", result.Schema[0]["Name"]?.ToString());
-        Assert.Equal("col2", result.Schema[1]["Name"]?.ToString());
+        Assert.Equal("col1", result.Schema[0].GetProperty("Name").GetString());
+        Assert.Equal("col2", result.Schema[1].GetProperty("Name").GetString());
     }
 
     [Theory]
@@ -88,14 +88,14 @@ public sealed class TableSchemaCommandTests
                 "db1",
                 "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<JsonNode>());
+                .Returns(new List<System.Text.Json.JsonElement>());
         }
         else
         {
             _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<JsonNode>());
+                .Returns(new List<System.Text.Json.JsonElement>());
         }
         var command = new TableSchemaCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -119,14 +119,14 @@ public sealed class TableSchemaCommandTests
                 "db1",
                 "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<JsonNode>>(new Exception("Test error")));
+                .Returns(Task.FromException<List<System.Text.Json.JsonElement>>(new Exception("Test error")));
         }
         else
         {
             _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<JsonNode>>(new Exception("Test error")));
+                .Returns(Task.FromException<List<System.Text.Json.JsonElement>>(new Exception("Test error")));
         }
         var command = new TableSchemaCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -155,6 +155,6 @@ public sealed class TableSchemaCommandTests
     private sealed class TableSchemaResult
     {
         [System.Text.Json.Serialization.JsonPropertyName("schema")]
-        public List<JsonNode> Schema { get; set; } = new();
+        public List<System.Text.Json.JsonElement> Schema { get; set; } = new();
     }
 }

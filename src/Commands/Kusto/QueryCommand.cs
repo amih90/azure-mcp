@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine.Parsing;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -38,7 +38,7 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
             if (!await ProcessArguments(context, args))
                 return context.Response;
 
-            List<JsonNode> results = [];
+            List<JsonElement> results = [];
             var kusto = context.GetService<IKustoService>();
 
             if (UseClusterUri(args))
@@ -76,5 +76,5 @@ public sealed class QueryCommand : BaseQueryCommand<QueryArguments>
         return context.Response;
     }
 
-    internal record QueryCommandResult(List<JsonNode> Results);
+    internal record QueryCommandResult(List<JsonElement> Results);
 }

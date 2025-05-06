@@ -35,10 +35,10 @@ public sealed class ClusterGetCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsCluster_WhenClusterExists()
     {
-        var expectedCluster = JsonNode.Parse("{\"name\":\"clusterA\"}");
+        var expectedCluster = JsonDocument.Parse("{\"name\":\"clusterA\"}").RootElement.Clone();
         _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
-            .Returns((Task<JsonNode>)(object)Task.FromResult<JsonNode?>(expectedCluster));
+            .Returns(Task.FromResult(expectedCluster));
         var command = new ClusterGetCommand(_logger);
         var parser = new Parser(command.GetCommand());
         var args = parser.Parse("--subscription sub123 --cluster-name clusterA");
@@ -51,8 +51,7 @@ public sealed class ClusterGetCommandTests
         var json = JsonSerializer.Serialize(response.Results);
         var result = JsonSerializer.Deserialize<ClusterGetResult>(json);
         Assert.NotNull(result);
-        Assert.NotNull(result.Cluster);
-        Assert.Equal("clusterA", result.Cluster?["name"]?.ToString());
+        Assert.Equal("clusterA", result.Cluster.GetProperty("name").GetString());
     }
 
     [Fact]
@@ -60,7 +59,7 @@ public sealed class ClusterGetCommandTests
     {
         _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
-            .Returns((Task<JsonNode>)(object)Task.FromResult<JsonNode?>(null));
+            .Returns(Task.FromResult(default(JsonElement)));
         var command = new ClusterGetCommand(_logger);
         var parser = new Parser(command.GetCommand());
         var args = parser.Parse("--subscription sub123 --cluster-name clusterA");
@@ -94,6 +93,6 @@ public sealed class ClusterGetCommandTests
     private sealed class ClusterGetResult
     {
         [JsonPropertyName("cluster")]
-        public JsonNode? Cluster { get; set; }
+        public JsonElement Cluster { get; set; }
     }
 }

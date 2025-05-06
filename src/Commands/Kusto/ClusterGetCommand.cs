@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 using System.CommandLine.Parsing;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using Azure.ResourceManager.Kusto;
 using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -44,7 +46,7 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = cluster != null ?
+            context.Response.Results = cluster.ValueKind != JsonValueKind.Undefined ?
                 ResponseResult.Create(new ClusterGetCommandResult(cluster), KustoJsonContext.Default.ClusterGetCommandResult) :
                 null;
         }
@@ -56,5 +58,5 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
         return context.Response;
     }
 
-    internal record ClusterGetCommandResult(JsonNode Cluster);
+    internal record ClusterGetCommandResult(JsonElement Cluster);
 }

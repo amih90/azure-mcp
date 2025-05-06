@@ -2,9 +2,8 @@
 // Licensed under the MIT License.
 
 using System.CommandLine.Parsing;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using AzureMcp.Arguments.Kusto;
-using AzureMcp.Models.Argument;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -31,7 +30,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
                 return context.Response;
 
             var kusto = context.GetService<IKustoService>();
-            List<JsonNode> tableSchema;
+            List<JsonElement> tableSchema;
 
             if (UseClusterUri(args))
             {
@@ -67,5 +66,5 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
         return context.Response;
     }
 
-    internal record TableSchemaCommandResult(List<JsonNode> Schema);
+    internal record TableSchemaCommandResult(List<JsonElement> Schema);
 }

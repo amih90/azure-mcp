@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine.Parsing;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -34,7 +34,7 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCom
                 return context.Response;
 
             var kusto = context.GetService<IKustoService>();
-            List<JsonNode> results;
+            List<JsonElement> results;
             var query = $"{args.Table} | sample {args.Limit}";
 
             if (UseClusterUri(args))
@@ -71,5 +71,5 @@ public sealed class SampleCommand(ILogger<SampleCommand> logger) : BaseSampleCom
         return context.Response;
     }
 
-    internal record SampleCommandResult(List<JsonNode> Results);
+    internal record SampleCommandResult(List<JsonElement> Results);
 }
