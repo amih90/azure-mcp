@@ -70,18 +70,6 @@ public abstract class BaseClusterCommand<
         return args;
     }
 
-    // Common method to get cluster options
-    protected async Task<List<ArgumentOption>> GetClusterOptions(CommandContext context, string subscription)
-    {
-        if (string.IsNullOrEmpty(subscription))
-            return [];
-
-        var kusto = context.GetService<IKustoService>();
-        var clusters = await kusto.ListClusters(subscription);
-
-        return clusters?.Select(a => new ArgumentOption { Name = a, Id = a }).ToList() ?? [];
-    }
-
     protected ArgumentBuilder<TArgs> CreateClusterUriArgument() =>
         ArgumentBuilder<TArgs>
             .Create(ArgumentDefinitions.Kusto.ClusterUri.Name, ArgumentDefinitions.Kusto.ClusterUri.Description)
