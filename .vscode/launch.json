@@ -430,14 +430,12 @@
         {
             "id": "kustoTableName",
             "type": "promptString",
-            "description": "Kusto Table Name",
-            "default": ""
+            "description": "Kusto Table Name"
         },
         {
             "id": "kustoQuery",
             "type": "promptString",
-            "description": "Kusto Query (KQL)",
-            "default": ""
+            "description": "Kusto Query (KQL)"
         },
         {
             "id": "storageAccountName",

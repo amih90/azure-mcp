@@ -297,7 +297,12 @@ public sealed class KustoService(
                 {
                     dict[reader.GetName(i)] = reader.GetValue(i);
                 }
-                var json = JsonSerializer.SerializeToElement(dict, KustoJsonContext.Default.QueryCommandResult);
+
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+                var json = JsonSerializer.SerializeToElement(dict);
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                 results.Add(json);
             }
         }
