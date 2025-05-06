@@ -222,7 +222,7 @@ public sealed class KustoService(
 
         var cslAdminProvider = await GetOrCreateCslAdminProvider(kcsb);
         var clientRequestProperties = CreateClientRequestProperties();
-        
+
         var result = new List<JsonElement>();
         using (var reader = await cslAdminProvider.ExecuteControlCommandAsync(
             databaseName,
@@ -240,14 +240,14 @@ public sealed class KustoService(
         return result;
     }
 
-public async Task<List<JsonElement>> QueryItems(
-        string subscriptionId,
-        string clusterName,
-        string databaseName,
-        string query,
-        string? tenant = null,
-        AuthMethod? authMethod = AuthMethod.Credential,
-        RetryPolicyArguments? retryPolicy = null)
+    public async Task<List<JsonElement>> QueryItems(
+            string subscriptionId,
+            string clusterName,
+            string databaseName,
+            string query,
+            string? tenant = null,
+            AuthMethod? authMethod = AuthMethod.Credential,
+            RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId, clusterName, databaseName, query);
 
