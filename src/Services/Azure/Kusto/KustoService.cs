@@ -107,8 +107,9 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(subscriptionId, clusterName);
 
-        string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
-        return await ListDatabases(clusterUri, tenant, authMethod, retryPolicy);
+        string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
+
+        return await _ListDatabases(clusterUri, clusterName, tenant, authMethod, retryPolicy);
     }
 
     public async Task<List<string>> ListDatabases(
@@ -119,8 +120,19 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(clusterUri);
 
-        var clusterName = GetClusterNameFromUri(clusterUri);
-        ValidateRequiredParameters(clusterName);
+        var clusterName = await GetClusterNameFromUri(clusterUri, tenant, retryPolicy);
+
+        return await _ListDatabases(clusterUri, clusterName, tenant, authMethod, retryPolicy);
+    }
+
+    private async Task<List<string>> _ListDatabases(
+        string clusterUri,
+        string clusterName,
+        string? tenant = null,
+        AuthMethod? authMethod = AuthMethod.Credential,
+        RetryPolicyArguments? retryPolicy = null)
+    {
+        ValidateRequiredParameters(clusterUri);
 
         var kcsb = await CreateKustoConnectionStringBuilder(
             clusterUri,
@@ -155,7 +167,8 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(subscriptionId, clusterName, databaseName);
 
-        var clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
+        string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
+
         return await ListTables(clusterUri, databaseName, tenant, authMethod, retryPolicy);
     }
 
@@ -167,9 +180,6 @@ public sealed class KustoService(
         RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(clusterUri, databaseName);
-
-        var clusterName = GetClusterNameFromUri(clusterUri);
-        ValidateRequiredParameters(clusterName);
 
         var kcsb = await CreateKustoConnectionStringBuilder(
             clusterUri,
@@ -195,7 +205,7 @@ public sealed class KustoService(
         return result;
     }
 
-    public async Task<List<JsonElement>> GetTableSchema(
+    public async Task<string> GetTableSchema(
         string subscriptionId,
         string clusterName,
         string databaseName,
@@ -204,11 +214,11 @@ public sealed class KustoService(
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null)
     {
-        var clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
+        string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
         return await GetTableSchema(clusterUri, databaseName, tableName, tenant, authMethod, retryPolicy);
     }
 
-    public async Task<List<JsonElement>> GetTableSchema(
+    public async Task<string> GetTableSchema(
         string clusterUri,
         string databaseName,
         string tableName,
@@ -219,25 +229,27 @@ public sealed class KustoService(
         ValidateRequiredParameters(clusterUri, databaseName, tableName);
 
         var kcsb = await CreateKustoConnectionStringBuilder(clusterUri, authMethod, null, tenant);
-
         var cslAdminProvider = await GetOrCreateCslAdminProvider(kcsb);
         var clientRequestProperties = CreateClientRequestProperties();
 
-        var result = new List<JsonElement>();
         using (var reader = await cslAdminProvider.ExecuteControlCommandAsync(
             databaseName,
             $".show table {tableName} cslschema",
             clientRequestProperties))
         {
-            while (reader.Read())
+            if (reader.Read())
             {
-                var jsonString = reader["Schema"].ToString()!;
-                using var doc = JsonDocument.Parse(jsonString);
-                result.Add(doc.RootElement.Clone());
+                var schema = reader["Schema"].ToString();
+                if (string.IsNullOrEmpty(schema))
+                {
+                    throw new Exception($"No schema found for table '{tableName}' in database '{databaseName}'.");
+                }
+
+                return schema!;
             }
         }
 
-        return result;
+        throw new Exception($"No schema found for table '{tableName}' in database '{databaseName}'.");
     }
 
     public async Task<List<JsonElement>> QueryItems(
@@ -251,7 +263,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(subscriptionId, clusterName, databaseName, query);
 
-        string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
+        string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
 
         return await QueryItems(clusterUri, databaseName, query, tenant, authMethod, retryPolicy);
     }
@@ -349,27 +361,44 @@ public sealed class KustoService(
         }
     }
 
-    private async Task<string> GetClusterUri(string subscriptionId, string clusterName, string? tenant, RetryPolicyArguments? retryPolicy)
+    private async Task<string> GetClusterProperty(
+        string subscriptionId, 
+        string clusterName, 
+        string propertyName,
+        string? tenant, 
+        RetryPolicyArguments? retryPolicy)
     {
         var cluster = await GetCluster(subscriptionId, clusterName, tenant, retryPolicy);
 
-        var clusterUri = cluster.GetProperty("Data").GetProperty("ClusterUri").GetString();
+        var value = cluster.GetProperty("Data").GetProperty(propertyName).GetString();
 
-        if (string.IsNullOrEmpty(clusterUri))
+        if (string.IsNullOrEmpty(value))
         {
-            throw new Exception($"Could not retrieve URI for cluster '{clusterName}'");
+            throw new Exception($"Could not retrieve {propertyName} for cluster '{clusterName}'");
         }
 
-        return clusterUri!;
+        return value!;
     }
 
-    public static string GetClusterNameFromUri(string clusterUri)
+    private async Task<string> GetClusterNameFromUri(
+        string clusterUri, 
+        string? tenant = null, 
+        RetryPolicyArguments? retryPolicy = null)
     {
-        ValidateRequiredParameters(clusterUri);
+        var subscriptionsOptions = await _subscriptionService.GetSubscriptions(tenant, retryPolicy);
+        foreach (var subscriptionOption in subscriptionsOptions)
+        {
+            var subscription = await _subscriptionService.GetSubscription(subscriptionOption.Id, tenant, retryPolicy);
 
-        var uri = new Uri(clusterUri);
-        var host = uri.Host;
-        var clusterName = host.Split('.')[0];
-        return clusterName;
+            await foreach (var cluster in subscription.GetKustoClustersAsync())
+            {
+                if (string.Equals(cluster.Data.ClusterUri?.ToString(), clusterUri, StringComparison.OrdinalIgnoreCase))
+                {
+                    return cluster.Data.Name;
+                }
+            }
+        }
+
+        throw new Exception($"Could not find Kusto cluster with URI '{clusterUri}' in any subscription.");
     }
 }

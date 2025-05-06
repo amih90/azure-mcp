@@ -10,7 +10,7 @@ using ModelContextProtocol.Server;
 
 namespace AzureMcp.Commands.Kusto;
 
-public sealed class DatabaseListCommand : BaseDatabaseCommand<DatabaseListArguments>
+public sealed class DatabaseListCommand : BaseClusterCommand<DatabaseListArguments>
 {
     private readonly ILogger<DatabaseListCommand> _logger;
 

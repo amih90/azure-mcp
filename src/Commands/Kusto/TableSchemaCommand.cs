@@ -30,7 +30,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
                 return context.Response;
 
             var kusto = context.GetService<IKustoService>();
-            List<JsonElement> tableSchema;
+            string tableSchema;
 
             if (UseClusterUri(args))
             {
@@ -54,9 +54,7 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
                     args.RetryPolicy);
             }
 
-            context.Response.Results = tableSchema?.Count > 0 ?
-                ResponseResult.Create(new TableSchemaCommandResult(tableSchema), KustoJsonContext.Default.TableSchemaCommandResult) :
-                null;
+            context.Response.Results = ResponseResult.Create(new TableSchemaCommandResult(tableSchema), KustoJsonContext.Default.TableSchemaCommandResult);
         }
         catch (Exception ex)
         {
@@ -66,5 +64,5 @@ public sealed class TableSchemaCommand(ILogger<TableSchemaCommand> logger) : Bas
         return context.Response;
     }
 
-    internal record TableSchemaCommandResult(List<JsonElement> Schema);
+    internal record TableSchemaCommandResult(string Schema);
 }

@@ -18,6 +18,8 @@ public abstract class BaseClusterCommand<
     protected readonly Option<string> _clusterNameOption = ArgumentDefinitions.Kusto.Cluster.ToOption();
     protected readonly Option<string> _clusterUriOption = ArgumentDefinitions.Kusto.ClusterUri.ToOption();
 
+    protected static bool UseClusterUri(BaseClusterArguments args) => !string.IsNullOrEmpty(args.ClusterUri);
+
     protected override void RegisterOptions(Command command)
     {
         base.RegisterOptions(command);

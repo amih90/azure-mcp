@@ -15,8 +15,6 @@ public abstract class BaseDatabaseCommand<
 {
     protected readonly Option<string> _databaseOption = ArgumentDefinitions.Kusto.Database.ToOption();
 
-    protected static bool UseClusterUri(BaseDatabaseArguments args) => !string.IsNullOrEmpty(args.ClusterUri);
-
     protected override void RegisterOptions(Command command)
     {
         base.RegisterOptions(command);

@@ -3,10 +3,8 @@
 
 using System.CommandLine.Parsing;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using AzureMcp.Arguments;
-using AzureMcp.Arguments.Kusto;
 using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 using AzureMcp.Models.Command;
@@ -14,7 +12,6 @@ using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace AzureMcp.Tests.Commands.Kusto;

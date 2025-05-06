@@ -3,14 +3,16 @@
 
 using System.CommandLine.Parsing;
 using System.Text.Json;
-using AzureMcp.Arguments; // For RetryPolicyArguments
+using System.Text.Json.Serialization;
+using AzureMcp.Arguments;
 using AzureMcp.Commands.Kusto;
-using AzureMcp.Models; // For AuthMethod
+using AzureMcp.Models;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace AzureMcp.Tests.Commands.Kusto;
@@ -40,10 +42,8 @@ public sealed class TableSchemaCommandTests
     [MemberData(nameof(TableSchemaArgumentMatrix))]
     public async Task ExecuteAsync_ReturnsSchema(string cliArgs, bool useClusterUri)
     {
-        var expectedSchema = new List<System.Text.Json.JsonElement> {
-            System.Text.Json.JsonDocument.Parse("{\"Name\":\"col1\",\"Type\":\"string\"}").RootElement.Clone(),
-            System.Text.Json.JsonDocument.Parse("{\"Name\":\"col2\",\"Type\":\"int\"}").RootElement.Clone()
-        };
+        var expectedSchema = "col1:datetime,col2:string";
+        
         if (useClusterUri)
         {
             _kusto.GetTableSchema(
@@ -72,15 +72,17 @@ public sealed class TableSchemaCommandTests
         var result = System.Text.Json.JsonSerializer.Deserialize<TableSchemaResult>(json);
         Assert.NotNull(result);
         Assert.NotNull(result.Schema);
-        Assert.Equal(2, result.Schema.Count);
-        Assert.Equal("col1", result.Schema[0].GetProperty("Name").GetString());
-        Assert.Equal("col2", result.Schema[1].GetProperty("Name").GetString());
+        
+        Assert.Equal(expectedSchema, result.Schema);
     }
 
     [Theory]
     [MemberData(nameof(TableSchemaArgumentMatrix))]
     public async Task ExecuteAsync_ReturnsNull_WhenNoSchema(string cliArgs, bool useClusterUri)
     {
+        // Arrange
+        var expectedError = "Test error. To mitigate this issue, please refer to the troubleshooting guidelines here at https://aka.ms/azmcp/troubleshooting.";
+        
         if (useClusterUri)
         {
             _kusto.GetTableSchema(
@@ -88,14 +90,14 @@ public sealed class TableSchemaCommandTests
                 "db1",
                 "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<System.Text.Json.JsonElement>());
+                .ThrowsAsync(new Exception("Test error"));
         }
         else
         {
             _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<System.Text.Json.JsonElement>());
+                .ThrowsAsync(new Exception("Test error"));
         }
         var command = new TableSchemaCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -103,8 +105,11 @@ public sealed class TableSchemaCommandTests
         var context = new CommandContext(_serviceProvider);
 
         var response = await command.ExecuteAsync(context, args);
+        
+        // Assert
         Assert.NotNull(response);
-        Assert.Null(response.Results);
+        Assert.Equal(500, response.Status);
+        Assert.Equal(expectedError, response.Message);
     }
 
     [Theory]
@@ -119,14 +124,14 @@ public sealed class TableSchemaCommandTests
                 "db1",
                 "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<System.Text.Json.JsonElement>>(new Exception("Test error")));
+                .Returns(Task.FromException<string>(new Exception("Test error")));
         }
         else
         {
             _kusto.GetTableSchema(
                 "sub1", "mycluster", "db1", "table1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(Task.FromException<List<System.Text.Json.JsonElement>>(new Exception("Test error")));
+                .Returns(Task.FromException<string>(new Exception("Test error")));
         }
         var command = new TableSchemaCommand(_logger);
         var parser = new Parser(command.GetCommand());
@@ -154,7 +159,7 @@ public sealed class TableSchemaCommandTests
 
     private sealed class TableSchemaResult
     {
-        [System.Text.Json.Serialization.JsonPropertyName("schema")]
-        public List<System.Text.Json.JsonElement> Schema { get; set; } = new();
+        [JsonPropertyName("schema")]
+        public string Schema { get; set; } = string.Empty;
     }
 }

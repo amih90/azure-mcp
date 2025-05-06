@@ -62,7 +62,7 @@ public interface IKustoService
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null);
 
-    Task<List<JsonElement>> GetTableSchema(
+    Task<string> GetTableSchema(
         string clusterUri,
         string databaseName,
         string tableName,
@@ -70,7 +70,7 @@ public interface IKustoService
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null);
 
-    Task<List<JsonElement>> GetTableSchema(
+    Task<string> GetTableSchema(
         string subscriptionId,
         string clusterName,
         string databaseName,

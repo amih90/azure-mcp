@@ -3,4 +3,4 @@
 
 namespace AzureMcp.Arguments.Kusto;
 
-public class DatabaseListArguments : BaseDatabaseArguments;
+public class DatabaseListArguments : BaseClusterArguments;
