@@ -79,6 +79,7 @@ public class CommandFactory
         RegisterMonitorCommands();
         RegisterAppConfigCommands();
         RegisterSearchCommands();
+        RegisterPostgresCommands();
         RegisterToolsCommands();
         RegisterExtensionCommands();
         RegisterSubscriptionCommands();
@@ -139,6 +140,28 @@ public class CommandFactory
 
         tables.AddCommand("list", new Kusto.TableListCommand(GetLogger<Kusto.TableListCommand>()));
         tables.AddCommand("schema", new Kusto.TableSchemaCommand(GetLogger<Kusto.TableSchemaCommand>()));
+    }
+
+    private void RegisterPostgresCommands()
+    {
+        var pg = new CommandGroup("postgres", "PostgreSQL operations - Commands for listing and managing Azure Database for PostgreSQL - Flexible server.");
+        _rootGroup.AddSubGroup(pg);
+
+        var database = new CommandGroup("database", "PostgreSQL database operations");
+        pg.AddSubGroup(database);
+        database.AddCommand("list", new Postgres.Database.DatabaseListCommand(GetLogger<Postgres.Database.DatabaseListCommand>()));
+        database.AddCommand("query", new Postgres.Database.DatabaseQueryCommand(GetLogger<Postgres.Database.DatabaseQueryCommand>()));
+
+        var table = new CommandGroup("table", "PostgreSQL table operations");
+        pg.AddSubGroup(table);
+        table.AddCommand("list", new Postgres.Table.TableListCommand(GetLogger<Postgres.Table.TableListCommand>()));
+        table.AddCommand("schema", new Postgres.Table.GetSchemaCommand(GetLogger<Postgres.Table.GetSchemaCommand>()));
+
+        var server = new CommandGroup("server", "PostgreSQL server operations");
+        pg.AddSubGroup(server);
+        server.AddCommand("list", new Postgres.Server.ServerListCommand(GetLogger<Postgres.Server.ServerListCommand>()));
+        server.AddCommand("config", new Postgres.Server.GetConfigCommand(GetLogger<Postgres.Server.GetConfigCommand>()));
+        server.AddCommand("param", new Postgres.Server.GetParamCommand(GetLogger<Postgres.Server.GetParamCommand>()));
     }
 
     private void RegisterStorageCommands()

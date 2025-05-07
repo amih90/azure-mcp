@@ -1,5 +1,11 @@
 # Release History
 
+## 0.0.13 (2025-05-06)
+
+### Features Added
+
+- Support for Azure PostgreSQL. https://github.com/Azure/azure-mcp/pull/81
+
 ## 0.0.12 (2025-05-05)
 
 ### Features Added
@@ -14,7 +20,7 @@
 ## 0.0.11 (2025-04-29)
 
 ### Features Added
- 
+
 ### Breaking Changes
 
 ### Bugs Fixed
@@ -33,7 +39,7 @@
 - Support for Azure Resource Groups.
 - Support for Azure CLI.
 - Support for Azure Developer CLI (azd).
- 
+
 ### Breaking Changes
 
 ### Bugs Fixed

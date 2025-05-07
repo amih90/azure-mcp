@@ -63,7 +63,12 @@ The Azure MCP Server provides tools for interacting with the following Azure ser
 - Manage containers and items
 - Execute SQL queries against containers
 
-### 🗄️ Kusto (Azure Data Explorer)
+### 🐘 Azure Database for PostgreSQL - Flexible Server
+- List and query databases.
+- List and get schema for tables.
+- List, get configuration and get parameters for servers.
+
+### 🧮 Kusto (Azure Data Explorer)
 - List Kusto clusters
 - List databases in a Kusto cluster
 - List tables in a Kusto database
