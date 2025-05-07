@@ -346,7 +346,7 @@ public sealed class KustoService(
     {
         var cluster = await GetCluster(subscriptionId, clusterName, tenant, retryPolicy);
 
-        var value = cluster.ClusterUri;
+        var value = cluster?.ClusterUri;
 
         if (string.IsNullOrEmpty(value))
         {
