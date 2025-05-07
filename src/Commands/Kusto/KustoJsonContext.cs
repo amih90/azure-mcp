@@ -21,7 +21,7 @@ internal sealed partial class KustoJsonContext : JsonSerializerContext
 {
 }
 
-public sealed record KustoClusterResourceProxy() 
+public sealed record KustoClusterResourceProxy()
 {
     public required string ClusterUri { get; set; }
     public required string ClusterName { get; set; }

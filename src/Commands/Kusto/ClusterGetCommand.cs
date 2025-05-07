@@ -44,7 +44,7 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = cluster is null ? 
+            context.Response.Results = cluster is null ?
             null : ResponseResult.Create(new ClusterGetCommandResult(cluster), KustoJsonContext.Default.ClusterGetCommandResult);
         }
         catch (Exception ex)

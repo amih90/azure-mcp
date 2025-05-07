@@ -1,13 +1,13 @@
-using AzureMcp.Commands.Kusto;
 using System.Text.Json;
 using Azure.ResourceManager.Kusto;
 using AzureMcp.Arguments;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 using AzureMcp.Services.Interfaces;
+using Kusto.Cloud.Platform.Data;
 using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
-using Kusto.Cloud.Platform.Data;
 
 namespace AzureMcp.Services.Azure.Kusto;
 
@@ -71,11 +71,11 @@ public sealed class KustoService(
         return clusters;
     }
 
-public async Task<KustoClusterResourceProxy?> GetCluster(
-        string subscriptionId,
-        string clusterName,
-        string? tenant = null,
-        RetryPolicyArguments? retryPolicy = null)
+    public async Task<KustoClusterResourceProxy?> GetCluster(
+            string subscriptionId,
+            string clusterName,
+            string? tenant = null,
+            RetryPolicyArguments? retryPolicy = null)
     {
         ValidateRequiredParameters(subscriptionId, clusterName);
 
