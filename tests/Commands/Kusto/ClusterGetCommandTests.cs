@@ -35,10 +35,29 @@ public sealed class ClusterGetCommandTests
     [Fact]
     public async Task ExecuteAsync_ReturnsCluster_WhenClusterExists()
     {
-        var expectedCluster = JsonDocument.Parse("{\"name\":\"clusterA\"}").RootElement.Clone();
+        var expectedCluster = new KustoClusterResourceProxy
+        {
+            ClusterUri = "https://clusterA.kusto.windows.net",
+            ClusterName = "clusterA",
+            Location = "eastus",
+            ResourceGroupName = "rg1",
+            SubscriptionId = "sub123",
+            Sku = "Standard_D13_v2",
+            Zones = "",
+            Identity = "SystemAssigned",
+            ETag = "etag123",
+            State = "Running",
+            ProvisioningState = "Succeeded",
+            DataIngestionUri = "https://ingest-clusterA.kusto.windows.net",
+            StateReason = "",
+            IsStreamingIngestEnabled = false,
+            EngineType = "V3",
+            IsAutoStopEnabled = false
+        };
+
         _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(Task.FromResult(expectedCluster));
+            .Returns(expectedCluster);
         var command = new ClusterGetCommand(_logger);
         var parser = new Parser(command.GetCommand());
         var args = parser.Parse("--subscription sub123 --cluster-name clusterA");
@@ -48,10 +67,19 @@ public sealed class ClusterGetCommandTests
 
         Assert.NotNull(response);
         Assert.NotNull(response.Results);
+        
         var json = JsonSerializer.Serialize(response.Results);
-        var result = JsonSerializer.Deserialize<ClusterGetResult>(json);
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
+
+        var result = JsonSerializer.Deserialize<ClusterGetResult>(json, options);
         Assert.NotNull(result);
-        Assert.Equal("clusterA", result.Cluster.GetProperty("name").GetString());
+        Assert.NotNull(result.Cluster);
+        Assert.Equal("clusterA", result.Cluster.ClusterName);
     }
 
     [Fact]
@@ -59,7 +87,7 @@ public sealed class ClusterGetCommandTests
     {
         _kusto.GetCluster(
             "sub123", "clusterA", Arg.Any<string>(), Arg.Any<RetryPolicyArguments>())
-            .Returns(Task.FromResult(default(JsonElement)));
+            .Returns(Task.FromResult<KustoClusterResourceProxy?>(null));
         var command = new ClusterGetCommand(_logger);
         var parser = new Parser(command.GetCommand());
         var args = parser.Parse("--subscription sub123 --cluster-name clusterA");
@@ -68,6 +96,7 @@ public sealed class ClusterGetCommandTests
         var response = await command.ExecuteAsync(context, args);
 
         Assert.NotNull(response);
+        Assert.Equal(200, response.Status);
         Assert.Null(response.Results);
     }
 
@@ -93,6 +122,6 @@ public sealed class ClusterGetCommandTests
     private sealed class ClusterGetResult
     {
         [JsonPropertyName("cluster")]
-        public JsonElement Cluster { get; set; }
+        public KustoClusterResourceProxy? Cluster { get; set; }
     }
 }

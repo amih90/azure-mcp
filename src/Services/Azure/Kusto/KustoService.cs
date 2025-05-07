@@ -1,3 +1,4 @@
+using AzureMcp.Commands.Kusto;
 using System.Text.Json;
 using Azure.ResourceManager.Kusto;
 using AzureMcp.Arguments;
@@ -6,6 +7,7 @@ using AzureMcp.Services.Interfaces;
 using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
+using Kusto.Cloud.Platform.Data;
 
 namespace AzureMcp.Services.Azure.Kusto;
 
@@ -69,7 +71,7 @@ public sealed class KustoService(
         return clusters;
     }
 
-    public async Task<JsonElement> GetCluster(
+public async Task<KustoClusterResourceProxy?> GetCluster(
         string subscriptionId,
         string clusterName,
         string? tenant = null,
@@ -83,17 +85,11 @@ public sealed class KustoService(
         {
             if (string.Equals(cluster.Data.Name, clusterName, StringComparison.OrdinalIgnoreCase))
             {
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-                var json = JsonSerializer.SerializeToElement(cluster);
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-
-                return json;
+                return new KustoClusterResourceProxy(cluster);
             }
         }
 
-        throw new Exception($"Kusto cluster '{clusterName}' not found in subscription '{subscriptionId}'.");
+        return null;
     }
 
     public async Task<List<string>> ListDatabases(
@@ -106,7 +102,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(subscriptionId, clusterName);
 
-        string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
+        string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
 
         return await ListDatabases(clusterUri, clusterName, tenant, authMethod, retryPolicy);
     }
@@ -152,7 +148,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(subscriptionId, clusterName, databaseName);
 
-        string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
+        string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
 
         return await ListTables(clusterUri, databaseName, tenant, authMethod, retryPolicy);
     }
@@ -199,7 +195,7 @@ public sealed class KustoService(
         AuthMethod? authMethod = AuthMethod.Credential,
         RetryPolicyArguments? retryPolicy = null)
     {
-        string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
+        string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
         return await GetTableSchema(clusterUri, databaseName, tableName, tenant, authMethod, retryPolicy);
     }
 
@@ -248,7 +244,7 @@ public sealed class KustoService(
     {
         ValidateRequiredParameters(subscriptionId, clusterName, databaseName, query);
 
-        string clusterUri = await GetClusterProperty(subscriptionId, clusterName, "ClusterUri", tenant, retryPolicy);
+        string clusterUri = await GetClusterUri(subscriptionId, clusterName, tenant, retryPolicy);
 
         return await QueryItems(clusterUri, databaseName, query, tenant, authMethod, retryPolicy);
     }
@@ -275,20 +271,11 @@ public sealed class KustoService(
         var results = new List<JsonElement>();
         using (var reader = await cslQueryProvider.ExecuteQueryAsync(databaseName, query, clientRequestProperties))
         {
-            while (reader.Read())
+            var items = reader.ToJObjects();
+            foreach (var item in items)
             {
-                var dict = new Dictionary<string, object?>();
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    dict[reader.GetName(i)] = reader.GetValue(i);
-                }
-
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-                var json = JsonSerializer.SerializeToElement(dict);
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-                results.Add(json);
+                var json = item.ToString();
+                results.Add(JsonDocument.Parse(json).RootElement);
             }
         }
 
@@ -351,20 +338,19 @@ public sealed class KustoService(
         }
     }
 
-    private async Task<string> GetClusterProperty(
+    private async Task<string> GetClusterUri(
         string subscriptionId,
         string clusterName,
-        string propertyName,
         string? tenant,
         RetryPolicyArguments? retryPolicy)
     {
         var cluster = await GetCluster(subscriptionId, clusterName, tenant, retryPolicy);
 
-        var value = cluster.GetProperty("Data").GetProperty(propertyName).GetString();
+        var value = cluster.ClusterUri;
 
         if (string.IsNullOrEmpty(value))
         {
-            throw new Exception($"Could not retrieve {propertyName} for cluster '{clusterName}'");
+            throw new Exception($"Could not retrieve ClusterUri for cluster '{clusterName}'");
         }
 
         return value!;

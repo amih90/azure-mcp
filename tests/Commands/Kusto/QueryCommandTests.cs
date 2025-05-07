@@ -91,14 +91,14 @@ public sealed class QueryCommandTests
                 "db1",
                 "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<System.Text.Json.JsonElement>());
+                .Returns(new List<JsonElement>());
         }
         else
         {
             _kusto.QueryItems(
                 "sub1", "mycluster", "db1", "StormEvents | take 1",
                 Arg.Any<string>(), Arg.Any<AuthMethod?>(), Arg.Any<RetryPolicyArguments>())
-                .Returns(new List<System.Text.Json.JsonElement>());
+                .Returns(new List<JsonElement>());
         }
         var command = new QueryCommand(_logger);
         var parser = new Parser(command.GetCommand());

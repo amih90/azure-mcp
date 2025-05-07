@@ -2,9 +2,6 @@
 // Licensed under the MIT License.
 
 using System.CommandLine.Parsing;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Azure.ResourceManager.Kusto;
 using AzureMcp.Arguments.Kusto;
 using AzureMcp.Models.Command;
 using AzureMcp.Services.Interfaces;
@@ -34,6 +31,7 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
     public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult)
     {
         var args = BindArguments(parseResult);
+
         try
         {
             if (!await ProcessArguments(context, args))
@@ -46,17 +44,17 @@ public sealed class ClusterGetCommand : BaseClusterCommand<ClusterGetArguments>
                 args.Tenant,
                 args.RetryPolicy);
 
-            context.Response.Results = cluster.ValueKind != JsonValueKind.Undefined ?
-                ResponseResult.Create(new ClusterGetCommandResult(cluster), KustoJsonContext.Default.ClusterGetCommandResult) :
-                null;
+            context.Response.Results = cluster is null ? 
+            null : ResponseResult.Create(new ClusterGetCommandResult(cluster), KustoJsonContext.Default.ClusterGetCommandResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An exception occurred getting Kusto cluster details. Cluster: {Cluster}.", args.ClusterName);
             HandleException(context.Response, ex);
         }
+
         return context.Response;
     }
 
-    internal record ClusterGetCommandResult(JsonElement Cluster);
+    internal record ClusterGetCommandResult(KustoClusterResourceProxy Cluster);
 }

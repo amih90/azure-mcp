@@ -1,5 +1,6 @@
 using System.Text.Json;
 using AzureMcp.Arguments;
+using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 
 namespace AzureMcp.Services.Interfaces;
@@ -11,7 +12,7 @@ public interface IKustoService
         string? tenant = null,
         RetryPolicyArguments? retryPolicy = null);
 
-    Task<JsonElement> GetCluster(
+    Task<KustoClusterResourceProxy?> GetCluster(
         string subscriptionId,
         string clusterName,
         string? tenant = null,

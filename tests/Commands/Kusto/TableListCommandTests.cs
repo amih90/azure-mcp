@@ -5,7 +5,6 @@ using System.CommandLine.Parsing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AzureMcp.Arguments;
-using AzureMcp.Arguments.Kusto;
 using AzureMcp.Commands.Kusto;
 using AzureMcp.Models;
 using AzureMcp.Models.Command;
@@ -14,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
-using static AzureMcp.Commands.Kusto.TableListCommand;
 
 namespace AzureMcp.Tests.Commands.Kusto;
 
